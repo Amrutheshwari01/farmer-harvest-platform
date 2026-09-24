@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Farmer Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <!-- Top Navigation -->
+    <header class="navbar">
+
+        <div class="logo">
+            🌾 Farmer Harvest Portal
+        </div>
+
+        <div class="nav-right">
+
+            <span class="farmer-name">
+                {{ farmer_name }}
+            </span>
+
+            <a href="{{ url_for('logout') }}" class="logout-btn">
+                Logout
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- Dashboard Layout -->
+    <div class="dashboard-layout">
+
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+
+            <div class="sidebar-title">
+                Dashboard
+            </div>
+
+            <a href="#home" class="sidebar-link active">
+                🏠 Home
+            </a>
+
+            <a href="#profile" class="sidebar-link">
+                👤 My Profile
+            </a>
+
+            <a href="#harvests" class="sidebar-link">
+                🌾 My Harvests
+            </a>
+
+            <a href="#settings" class="sidebar-link">
+                ⚙️ Settings
+            </a>
+
+            <a href="{{ url_for('logout') }}" class="sidebar-link logout-link">
+                🚪 Logout
+            </a>
+
+        </aside>
+
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+
+            <!-- Welcome Section -->
+            <section id="home" class="welcome-section">
+
+                <div>
+
+                    <p class="welcome-label">
+                        FARMER DASHBOARD
+                    </p>
+
+                    <h1>
+                        Welcome, {{ farmer_name }}!
+                    </h1>
+
+                    <p>
+                        Manage your farmer account and access your
+                        harvest management tools from here.
+                    </p>
+
+                </div>
+
+                <div class="account-status">
+                    <span class="status-dot"></span>
+                    Account Active
+                </div>
+
+            </section>
+
+
+            <!-- Dashboard Cards -->
+            <section class="dashboard-cards">
+
+
+                <!-- Profile Card -->
+                <div class="dashboard-card">
+
+                    <div class="card-icon">
+                        👤
+                    </div>
+
+                    <h2>
+                        My Profile
+                    </h2>
+
+                    <p>
+                        View your farmer account information.
+                    </p>
+
+                    <div class="profile-details">
+
+                        <p>
+                            <strong>Name:</strong>
+                            {{ farmer_name }}
+                        </p>
+
+                        <p>
+                            <strong>Email:</strong>
+                            {{ farmer_email }}
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Harvest Card -->
+                <div class="dashboard-card">
+
+                    <div class="card-icon">
+                        🌾
+                    </div>
+
+                    <h2>
+                        My Harvests
+                    </h2>
+
+                    <p>
+                        View and manage your harvest records.
+                    </p>
+
+                    <a href="#harvests" class="card-button">
+                        View Harvests
+                    </a>
+
+                </div>
+
+
+                <!-- Add Harvest Card -->
+                <div class="dashboard-card">
+
+                    <div class="card-icon">
+                        ➕
+                    </div>
+
+                    <h2>
+                        Add Harvest
+                    </h2>
+
+                    <p>
+                        Add a new harvest record to your account.
+                    </p>
+
+                    <!-- Your friend can connect this later -->
+                    <a href="#harvests" class="card-button">
+                        Add Harvest
+                    </a>
+
+                </div>
+
+
+                <!-- Account Card -->
+                <div class="dashboard-card">
+
+                    <div class="card-icon">
+                        🔐
+                    </div>
+
+                    <h2>
+                        Account
+                    </h2>
+
+                    <p>
+                        Your account is currently active and ready
+                        to use.
+                    </p>
+
+                    <span class="active-label">
+                        Active
+                    </span>
+
+                </div>
+
+            </section>
+
+
+            <!-- Profile Section -->
+            <section id="profile" class="content-section">
+
+                <div class="section-heading">
+
+                    <div>
+                        <p class="section-label">
+                            ACCOUNT
+                        </p>
+
+                        <h2>
+                            My Profile
+                        </h2>
+                    </div>
+
+                </div>
+
+
+                <div class="profile-box">
+
+                    <div class="profile-row">
+
+                        <span>
+                            Full Name
+                        </span>
+
+                        <strong>
+                            {{ farmer_name }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="profile-row">
+
+                        <span>
+                            Email Address
+                        </span>
+
+                        <strong>
+                            {{ farmer_email }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="profile-row">
+
+                        <span>
+                            Account Status
+                        </span>
+
+                        <strong class="profile-active">
+                            Active
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- Harvest Connection Section -->
+            <section id="harvests" class="content-section">
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <p class="section-label">
+                            HARVEST MANAGEMENT
+                        </p>
+
+                        <h2>
+                            My Harvests
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <div class="harvest-placeholder">
+
+                    <div class="large-icon">
+                        🌾
+                    </div>
+
+                    <h3>
+                        Harvest Management
+                    </h3>
+
+                    <p>
+                        Your harvest records and harvest management
+                        tools will appear here.
+                    </p>
+
+                    <p class="connection-note">
+                        Harvest functionality will be connected
+                        by the harvest management module.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- Settings Section -->
+            <section id="settings" class="content-section">
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <p class="section-label">
+                            ACCOUNT
+                        </p>
+
+                        <h2>
+                            Settings
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <div class="settings-box">
+
+                    <p>
+                        Your farmer account is active.
+                    </p>
+
+                    <a href="{{ url_for('logout') }}" class="logout-large">
+                        Logout from Account
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- Footer -->
+            <footer>
+
+                <p>
+                    Farmer Harvest Portal
+                </p>
+
+                <p>
+                    Farmer Dashboard
+                </p>
+
+            </footer>
+
+        </main>
+
+    </div>
+
+</body>
+
+</html>
