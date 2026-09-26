@@ -23,7 +23,7 @@ import os
 # FLASK APPLICATION
 # ============================================================
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=None)
 
 # Secret key for sessions and flash messages
 app.secret_key = os.environ.get(
@@ -521,7 +521,7 @@ def farmer_details():
 # STATIC FILE SERVING
 # ============================================================
 
-@app.route("/static/<path:filename>")
+@app.route("/static/<path:filename>", endpoint="static")
 def serve_static(filename):
     for base in [
         os.path.join(PROJECT_ROOT, "static"),
