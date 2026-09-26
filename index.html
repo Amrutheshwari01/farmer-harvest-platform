@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7f8f2" />
+    <title>Farm Deal Details</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+      rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <div class="leaf-layer" aria-hidden="true">
+      <span class="leaf leaf-1"></span>
+      <span class="leaf leaf-2"></span>
+      <span class="leaf leaf-3"></span>
+      <span class="leaf leaf-4"></span>
+      <span class="leaf leaf-5"></span>
+      <span class="leaf leaf-6"></span>
+      <span class="leaf leaf-7"></span>
+      <span class="leaf leaf-8"></span>
+      <span class="leaf leaf-9"></span>
+      <span class="leaf leaf-10"></span>
+      <span class="leaf leaf-11"></span>
+      <span class="leaf leaf-12"></span>
+      <span class="leaf leaf-13"></span>
+      <span class="leaf leaf-14"></span>
+      <span class="leaf leaf-15"></span>
+      <span class="leaf leaf-16"></span>
+      <span class="leaf leaf-17"></span>
+      <span class="leaf leaf-18"></span>
+      <span class="leaf leaf-19"></span>
+      <span class="leaf leaf-20"></span>
+      <span class="leaf leaf-21"></span>
+      <span class="leaf leaf-22"></span>
+      <span class="leaf leaf-23"></span>
+      <span class="leaf leaf-24"></span>
+    </div>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="brand-mark" aria-hidden="true">✦</div>
+        <div class="title-wrap">
+          <div class="eyebrow-row">
+            <p class="eyebrow">Farm Records</p>
+            <span class="status-pill"
+              ><span class="status-dot"></span> Live workspace</span
+            >
+          </div>
+          <h1>Farmer <em>Deal Details</em></h1>
+          <p class="subtext">
+            Bring every harvest, quality note, and buyer-ready detail into one
+            calm, smart workspace.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="theme-toggle"
+          id="themeToggle"
+          aria-label="Switch to dark mode"
+          title="Toggle theme">
+          <span>☼</span>
+        </button>
+      </header>
+
+      <section class="hero-stats" aria-label="farm summary stats">
+        <div class="stat-box">
+          <span class="stat-icon">🌱</span>
+          <div>
+            <span>Fresh crops</span><strong>24<small>+</small></strong>
+          </div>
+        </div>
+        <div class="stat-box">
+          <span class="stat-icon">☀</span>
+          <div><span>Daily supply</span><strong>High</strong></div>
+        </div>
+        <div class="stat-box">
+          <span class="stat-icon">✦</span>
+          <div><span>Quality score</span><strong>Top</strong></div>
+        </div>
+        <div class="save-status" id="saveStatus">
+          <span class="save-icon">✓</span><span>Drafts save automatically</span>
+        </div>
+      </section>
+
+      <div class="progress-wrap" aria-label="Form completion">
+        <div class="progress-label">
+          <span>Profile completion</span><strong id="progressText">0%</strong>
+        </div>
+        <div class="progress-track">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+      </div>
+
+      <main class="layout">
+        <section class="card form-card">
+          <div class="card-heading">
+            <div>
+              <p class="section-kicker">01 — Your farm</p>
+              <h2>Farmer &amp; Farm Information</h2>
+            </div>
+            <span class="heading-badge">Required fields marked *</span>
+          </div>
+          <form id="farmForm">
+            <div class="grid two-columns">
+              <label
+                ><span>Farmer Name <b>*</b></span
+                ><input
+                  type="text"
+                  name="farmerName"
+                  placeholder="Enter full name"
+                  autocomplete="name"
+              /></label>
+              <label
+                ><span>Phone Number</span
+                ><input
+                  type="tel"
+                  name="phone"
+                  placeholder="Enter phone number"
+                  autocomplete="tel"
+              /></label>
+              <label
+                ><span>Farm Name</span
+                ><input
+                  type="text"
+                  name="farmName"
+                  placeholder="Farm or orchard name"
+              /></label>
+              <label
+                ><span>Location</span
+                ><input
+                  type="text"
+                  name="location"
+                  placeholder="Village / town / district"
+              /></label>
+              <label
+                ><span>Total Land Size</span
+                ><input type="text" name="landSize" placeholder="e.g. 4 acres"
+              /></label>
+              <label
+                ><span>Farm Type</span
+                ><select name="farmType">
+                  <option value="">Select farm type</option>
+                  <option>Vegetable Farm</option>
+                  <option>Fruit Farm</option>
+                  <option>Mixed Farm</option>
+                  <option>Organic Farm</option>
+                </select></label
+              >
+            </div>
+
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">02 — What’s growing</p>
+                <h3>Available Vegetables &amp; Produce</h3>
+              </div>
+              <button type="button" class="secondary-btn" id="addItemBtn">
+                <span>+</span> Add Item
+              </button>
+            </div>
+            <div id="itemsContainer" class="items-container">
+              <div class="produce-row">
+                <div class="row-number">01</div>
+                <label
+                  ><span>Vegetable / Crop</span
+                  ><input type="text" name="cropName" placeholder="e.g. Tomato"
+                /></label>
+                <label
+                  ><span>Available Quantity</span
+                  ><input type="text" name="quantity" placeholder="e.g. 200 kg"
+                /></label>
+                <label
+                  ><span>Quality</span
+                  ><select name="quality">
+                    <option value="">Select</option>
+                    <option>Excellent</option>
+                    <option>Good</option>
+                    <option>Average</option>
+                    <option>Fresh Harvest</option>
+                  </select></label
+                >
+                <label
+                  ><span>Price / Unit</span
+                  ><input type="text" name="price" placeholder="e.g. 40 / kg"
+                /></label>
+                <label
+                  ><span>Availability</span
+                  ><input
+                    type="text"
+                    name="availability"
+                    placeholder="e.g. Daily / Seasonal"
+                /></label>
+                <button
+                  type="button"
+                  class="remove-btn"
+                  aria-label="Remove item">
+                  ×
+                </button>
+              </div>
+            </div>
+
+            <div class="grid two-columns extra-fields">
+              <div class="voice-field">
+                <label
+                  ><span>Farm Conditions</span
+                  ><textarea
+                    id="farmConditions"
+                    name="farmConditions"
+                    rows="4"
+                    placeholder="Describe soil health, irrigation, or special practices..."></textarea>
+                </label>
+                <div class="voice-tools">
+                  <select class="voice-language" data-target="farmConditions">
+                    <option value="en-US">English</option>
+                    <option value="hi-IN">Hindi</option>
+                    <option value="bn-IN">Bangla</option>
+                    <option value="ta-IN">Tamil</option>
+                    <option value="te-IN">Telugu</option>
+                    <option value="mr-IN">Marathi</option>
+                    <option value="kn-IN">Kannada</option>
+                    <option value="ml-IN">Malayalam</option>
+                    <option value="gu-IN">Gujarati</option>
+                    <option value="es-ES">Spanish</option>
+                    <option value="fr-FR">French</option>
+                    <option value="de-DE">German</option>
+                  </select>
+                  <button
+                    type="button"
+                    class="mic-btn"
+                    data-target="farmConditions">
+                    🎤 Speak
+                  </button>
+                </div>
+              </div>
+
+              <div class="voice-field">
+                <label
+                  ><span>Notes / Additional Requirements</span
+                  ><textarea
+                    id="notes"
+                    name="notes"
+                    rows="4"
+                    placeholder="Delivery terms, packaging, certification, or sales info..."></textarea>
+                </label>
+                <div class="voice-tools">
+                  <select class="voice-language" data-target="notes">
+                    <option value="en-US">English</option>
+                    <option value="hi-IN">Hindi</option>
+                    <option value="bn-IN">Bangla</option>
+                    <option value="ta-IN">Tamil</option>
+                    <option value="te-IN">Telugu</option>
+                    <option value="mr-IN">Marathi</option>
+                    <option value="kn-IN">Kannada</option>
+                    <option value="ml-IN">Malayalam</option>
+                    <option value="gu-IN">Gujarati</option>
+                    <option value="es-ES">Spanish</option>
+                    <option value="fr-FR">French</option>
+                    <option value="de-DE">German</option>
+                  </select>
+                  <button type="button" class="mic-btn" data-target="notes">
+                    🎤 Speak
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="primary-btn">
+                <span>Save Farm Details</span><i>→</i></button
+              ><button type="reset" class="ghost-btn">Reset form</button>
+            </div>
+          </form>
+        </section>
+
+        <aside class="card preview-card">
+          <div class="preview-top">
+            <div>
+              <p class="section-kicker">Your snapshot</p>
+              <h2>Farm Summary</h2>
+            </div>
+            <span class="live-dot">● Live</span>
+          </div>
+          <div id="summaryBox" class="summary-box">
+            <div class="empty-state">
+              <div class="empty-icon">✦</div>
+              <h3>Your story starts here</h3>
+              <p>
+                Fill in a few details and your buyer-ready farm summary will
+                appear live.
+              </p>
+              <div class="empty-line"></div>
+              <div class="empty-line short"></div>
+            </div>
+          </div>
+          <div class="preview-footer">
+            <span>Last updated</span
+            ><strong id="lastUpdated">Not saved yet</strong>
+          </div>
+        </aside>
+      </main>
+      <footer>
+        <span>Made for better harvest decisions.</span
+        ><span>© <span id="year"></span> Farm Records</span>
+      </footer>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite">
+      <span>✓</span>
+      <p>Farm details saved successfully</p>
+    </div>
+    <script src="script.js?v=2"></script>
+  </body>
+</html>
