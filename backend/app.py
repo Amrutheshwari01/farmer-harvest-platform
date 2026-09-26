@@ -6,8 +6,9 @@ from flask import (
     url_for,
     flash,
     session,
+    send_file,
     send_from_directory,
-    jsonify
+    jsonify,
 )
 
 from werkzeug.security import (
@@ -431,26 +432,7 @@ def dashboard():
 
 
 # ============================================================
-# LOGOUT
-# ============================================================
-
-@app.route("/logout")
-def logout():
-
-    # Clear session
-    session.clear()
-
-    flash(
-        "You have been logged out successfully."
-    )
-
-    return redirect(
-        url_for("login")
-    )
-
-
-# ============================================================
-# FARMER DETAILS ROUTE
+# FARMER DEAL DETAILS
 # ============================================================
 
 @app.route("/farmer-details")
@@ -478,7 +460,7 @@ def farmer_details():
     conn.close()
 
     # Read the HTML file and inject farmer data
-    with open(os.path.join("static", "index.html"), "r", encoding="utf-8") as f:
+    with open(os.path.join(PROJECT_ROOT, "index.html"), "r", encoding="utf-8") as f:
         html_content = f.read()
 
     # Inject farmer data as JavaScript variables
@@ -493,7 +475,7 @@ def farmer_details():
     """
 
     # Replace the back button link with the proper dashboard URL
-    html_content = html_content.replace('href="/dashboard"', f'href="{url_for("dashboard")}"')
+    html_content = html_content.replace('href="dashboard"', f'href="{url_for("dashboard")}#harvests"').replace('href="/dashboard"', f'href="{url_for("dashboard")}#harvests"')
 
     # Insert the script before the closing </body> tag
     html_content = html_content.replace("</body>", farmer_data_script + "</body>")
@@ -501,17 +483,23 @@ def farmer_details():
     return html_content
 
 
-# ============================================================
-# STATIC FILE SERVING
-# ============================================================
-
-@app.route("/static/<path:filename>")
-def serve_static(filename):
-    return send_from_directory("static", filename)
+@app.route("/styles.css")
+def farmer_details_styles():
+    return send_from_directory(PROJECT_ROOT, "styles.css")
 
 
+@app.route("/script.js")
+def farmer_details_script():
+    return send_from_directory(PROJECT_ROOT, "script.js")
+
+
+@app.route("/images/<path:filename>")
+def serve_images(filename):
+    return send_from_directory(os.path.join(PROJECT_ROOT, "images"), filename)
+
+
 # ============================================================
-# FARM DETAILS API
+# SAVE FARM DETAILS API
 # ============================================================
 
 @app.route("/api/farm-details", methods=["POST"])
@@ -538,7 +526,7 @@ def save_farm_details():
         existing = cursor.fetchone()
 
         import json
-        items_json = json.dumps(data.get("items", []))
+        items_json = json.dumps(data.get("items", []))  # Keep as "items" for database storage
 
         if existing:
             # Update existing record
@@ -589,6 +577,10 @@ def save_farm_details():
         return jsonify({"success": False, "message": f"Error saving farm details: {str(e)}"}), 500
 
 
+# ============================================================
+# GET FARM DETAILS API
+# ============================================================
+
 @app.route("/api/farm-details", methods=["GET"])
 def get_farm_details():
     if "farmer_id" not in session:
@@ -637,6 +629,25 @@ def get_farm_details():
 
 
 # ============================================================
+# LOGOUT
+# ============================================================
+
+@app.route("/logout")
+def logout():
+
+    # Clear session
+    session.clear()
+
+    flash(
+        "You have been logged out successfully."
+    )
+
+    return redirect(
+        url_for("login")
+    )
+
+
+# ============================================================
 # RUN APPLICATION
 # ============================================================
 
@@ -647,3 +658,12 @@ if __name__ == "__main__":
         port=5000,
         debug=True
     )
+@app.route("/static/<path:filename>")
+def serve_static(filename):
+    static_dir = os.path.join(PROJECT_ROOT, "static")
+    if os.path.exists(os.path.join(static_dir, filename)):
+        return send_from_directory(static_dir, filename)
+    backend_static = os.path.join(PROJECT_ROOT, "backend", "static")
+    if os.path.exists(os.path.join(backend_static, filename)):
+        return send_from_directory(backend_static, filename)
+    return send_from_directory(PROJECT_ROOT, filename)

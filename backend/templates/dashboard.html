@@ -109,7 +109,7 @@
 
             <p>View and manage your harvest records.</p>
 
-            <a href="#harvests" class="card-button"> View Harvests </a>
+            <a href="{{ url_for('farmer_details') }}" class="card-button"> View Harvests </a>
           </div>
 
           <!-- Add Harvest Card -->
@@ -121,7 +121,7 @@
             <p>Add a new harvest record to your account.</p>
 
             <!-- Your friend can connect this later -->
-            <a href="#harvests" class="card-button"> Add Harvest </a>
+            <a href="{{ url_for('farmer_details') }}" class="card-button"> Add Harvest </a>
           </div>
 
           <!-- Farmer Details Card -->
