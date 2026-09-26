@@ -459,17 +459,33 @@ def farmer_details():
     farmer = cursor.fetchone()
     conn.close()
 
-    # Read the HTML file and inject farmer data
-    with open(os.path.join(PROJECT_ROOT, "index.html"), "r", encoding="utf-8") as f:
+    # Find and read the HTML file with resilient path fallback
+    candidate_paths = [
+        os.path.join(PROJECT_ROOT, "index.html"),
+        os.path.join(PROJECT_ROOT, "static", "index.html"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "index.html"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates", "index.html"),
+        os.path.join("static", "index.html"),
+        "index.html",
+    ]
+    html_path = next((p for p in candidate_paths if os.path.exists(p)), None)
+    if not html_path:
+        raise FileNotFoundError(f"Could not locate index.html in candidate paths: {candidate_paths}")
+
+    with open(html_path, "r", encoding="utf-8") as f:
         html_content = f.read()
 
     # Inject farmer data as JavaScript variables
+    farmer_name = farmer["name"] if farmer else ""
+    farmer_phone = farmer["phone"] if farmer else ""
+    farmer_email = farmer["email"] if farmer else ""
+
     farmer_data_script = f"""
     <script>
         window.farmerData = {{
-            name: "{farmer['name']}" if farmer else "",
-            phone: "{farmer['phone']}" if farmer else "",
-            email: "{farmer['email']}" if farmer else ""
+            name: "{farmer_name}",
+            phone: "{farmer_phone}",
+            email: "{farmer_email}"
         }};
     </script>
     """
@@ -485,11 +501,17 @@ def farmer_details():
 
 @app.route("/styles.css")
 def farmer_details_styles():
+    for p in [PROJECT_ROOT, os.path.join(PROJECT_ROOT, "static"), os.path.dirname(os.path.abspath(__file__))]:
+        if os.path.exists(os.path.join(p, "styles.css")):
+            return send_from_directory(p, "styles.css")
     return send_from_directory(PROJECT_ROOT, "styles.css")
 
 
 @app.route("/script.js")
 def farmer_details_script():
+    for p in [PROJECT_ROOT, os.path.join(PROJECT_ROOT, "static"), os.path.dirname(os.path.abspath(__file__))]:
+        if os.path.exists(os.path.join(p, "script.js")):
+            return send_from_directory(p, "script.js")
     return send_from_directory(PROJECT_ROOT, "script.js")
 
 
