@@ -17,13 +17,20 @@ from werkzeug.security import (
 
 import sqlite3
 import os
+import json
 
 
 # ============================================================
 # FLASK APPLICATION
 # ============================================================
 
-app = Flask(__name__)
+# Disable Flask's automatic /static route.
+# We create our own route below because this project has:
+#
+# static/                 -> Farmer Details / Harvest integration
+# backend/static/         -> Login / Dashboard styling
+#
+app = Flask(__name__, static_folder=None)
 
 # Secret key for sessions and flash messages
 app.secret_key = os.environ.get(
@@ -33,19 +40,32 @@ app.secret_key = os.environ.get(
 
 
 # ============================================================
-# DATABASE CONFIGURATION
+# PROJECT PATHS
 # ============================================================
 
 # Project structure:
 #
 # farmer-harvest-platform/
-# │
+#
 # ├── data/
 # │   └── farmers.db
 # │
+# ├── static/
+# │   ├── index.html
+# │   ├── styles.css
+# │   ├── script.js
+# │   └── images/
+# │       └── mic-icon.svg
+# │
 # └── backend/
-#     └── app.py
-#
+#     ├── app.py
+#     ├── static/
+#     │   └── style.css
+#     └── templates/
+#         ├── login.html
+#         ├── signup.html
+#         └── dashboard.html
+
 
 PROJECT_ROOT = os.path.dirname(
     os.path.dirname(
@@ -61,6 +81,18 @@ DB_DIR = os.path.join(
 DB_PATH = os.path.join(
     DB_DIR,
     "farmers.db"
+)
+
+# Static folders
+ROOT_STATIC_DIR = os.path.join(
+    PROJECT_ROOT,
+    "static"
+)
+
+BACKEND_STATIC_DIR = os.path.join(
+    PROJECT_ROOT,
+    "backend",
+    "static"
 )
 
 
@@ -307,8 +339,6 @@ def login():
         # ----------------------------------------------------
 
         conn = sqlite3.connect(DB_PATH)
-
-        # Allows accessing columns using column names
         conn.row_factory = sqlite3.Row
 
         cursor = conn.cursor()
@@ -377,7 +407,7 @@ def dashboard():
             url_for("login")
         )
 
-    # Get additional farmer information from database
+    # Get additional farmer information
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -396,7 +426,8 @@ def dashboard():
     # Get farm details
     cursor.execute(
         """
-        SELECT * FROM farm_details
+        SELECT *
+        FROM farm_details
         WHERE farmer_id = ?
         ORDER BY updated_at DESC
         LIMIT 1
@@ -405,11 +436,13 @@ def dashboard():
     )
 
     farm_details = cursor.fetchone()
+
     conn.close()
 
     farm_details_data = None
+
     if farm_details:
-        import json
+
         farm_details_data = {
             "farmName": farm_details["farm_name"],
             "location": farm_details["location"],
@@ -417,15 +450,31 @@ def dashboard():
             "farmType": farm_details["farm_type"],
             "farmConditions": farm_details["farm_conditions"],
             "notes": farm_details["notes"],
-            "crops": json.loads(farm_details["items"]) if farm_details["items"] else [],
+            "crops": (
+                json.loads(farm_details["items"])
+                if farm_details["items"]
+                else []
+            ),
             "updated_at": farm_details["updated_at"]
         }
 
     return render_template(
         "dashboard.html",
-        farmer_name=farmer["name"] if farmer else session.get("farmer_name", ""),
-        farmer_email=farmer["email"] if farmer else session.get("farmer_email", ""),
-        farmer_phone=farmer["phone"] if farmer else "",
+        farmer_name=(
+            farmer["name"]
+            if farmer
+            else session.get("farmer_name", "")
+        ),
+        farmer_email=(
+            farmer["email"]
+            if farmer
+            else session.get("farmer_email", "")
+        ),
+        farmer_phone=(
+            farmer["phone"]
+            if farmer
+            else session.get("farmer_phone", "")
+        ),
         farm_details=farm_details_data
     )
 
@@ -437,7 +486,6 @@ def dashboard():
 @app.route("/logout")
 def logout():
 
-    # Clear session
     session.clear()
 
     flash(
@@ -450,17 +498,15 @@ def logout():
 
 
 # ============================================================
-# FARMER DETAILS ROUTE
+# FARMER DETAILS PAGE
 # ============================================================
 
 @app.route("/farmer-details")
 def farmer_details():
-
     if "farmer_id" not in session:
         flash("Please login to access your farmer details.")
         return redirect(url_for("login"))
 
-    # Get farmer information from database
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -471,80 +517,110 @@ def farmer_details():
         FROM farmers
         WHERE id = ?
         """,
-        (session["farmer_id"],)
+        (session["farmer_id"],),
     )
-
     farmer = cursor.fetchone()
+
+    cursor.execute(
+        """
+        SELECT *
+        FROM farm_details
+        WHERE farmer_id = ?
+        ORDER BY updated_at DESC
+        LIMIT 1
+        """,
+        (session["farmer_id"],),
+    )
+    saved_details = cursor.fetchone()
     conn.close()
 
-    # Read the HTML file and inject farmer data
-    html_candidates = [
-        os.path.join(PROJECT_ROOT, "static", "index.html"),
-        os.path.join(PROJECT_ROOT, "index.html"),
-        os.path.join(os.path.dirname(__file__), "..", "static", "index.html"),
-        os.path.join(os.path.dirname(__file__), "..", "index.html")
-    ]
-    html_path = None
-    for p in html_candidates:
-        if os.path.exists(p):
-            html_path = p
-            break
-
-    if not html_path:
-        return "Farmer details page not found.", 404
-
-    with open(html_path, "r", encoding="utf-8") as f:
-        html_content = f.read()
-
-    import json
     farmer_data = {
         "name": farmer["name"] if farmer else "",
         "phone": farmer["phone"] if farmer else "",
-        "email": farmer["email"] if farmer else ""
+        "email": farmer["email"] if farmer else "",
     }
-    farmer_data_script = f"""
-    <script>
-        window.farmerData = {json.dumps(farmer_data)};
-    </script>
-    """
 
-    # Replace the back button link with the proper dashboard URL
-    html_content = html_content.replace('href="/dashboard"', f'href="{url_for("dashboard")}"')
+    farm_details = None
+    if saved_details:
+        farm_details = {
+            "farmName": saved_details["farm_name"] or "",
+            "location": saved_details["location"] or "",
+            "landSize": saved_details["land_size"] or "",
+            "farmType": saved_details["farm_type"] or "",
+            "farmConditions": saved_details["farm_conditions"] or "",
+            "notes": saved_details["notes"] or "",
+            "items": json.loads(saved_details["items"]) if saved_details["items"] else [],
+            "updated_at": saved_details["updated_at"],
+        }
 
-    # Insert the script before the closing </body> tag
-    html_content = html_content.replace("</body>", farmer_data_script + "</body>")
-
-    return html_content
-
+    return render_template(
+        "farmer_details.html",
+        farmer_name=farmer_data["name"],
+        farmer_data=farmer_data,
+        farm_details=farm_details,
+    )
 
 # ============================================================
 # STATIC FILE SERVING
 # ============================================================
 
-@app.route("/static/<path:filename>")
+@app.route("/static/<path:filename>", endpoint="static")
 def serve_static(filename):
-    for base in [
-        os.path.join(PROJECT_ROOT, "static"),
-        os.path.join(PROJECT_ROOT, "backend", "static"),
-        PROJECT_ROOT
-    ]:
-        if os.path.exists(os.path.join(base, filename)):
-            return send_from_directory(base, filename)
-    return send_from_directory(os.path.join(PROJECT_ROOT, "static"), filename)
 
-@app.route("/styles.css")
-def serve_root_styles():
-    for base in [os.path.join(PROJECT_ROOT, "static"), PROJECT_ROOT]:
-        if os.path.exists(os.path.join(base, "styles.css")):
-            return send_from_directory(base, "styles.css")
-    return "", 404
+    # --------------------------------------------------------
+    # FIRST: FARMER DETAILS / HARVEST STATIC FILES
+    # --------------------------------------------------------
+    #
+    # Examples:
+    #
+    # /static/styles.css
+    # /static/script.js
+    # /static/images/mic-icon.svg
+    #
+    # These come from:
+    #
+    # project/static/
+    #
 
-@app.route("/script.js")
-def serve_root_script():
-    for base in [os.path.join(PROJECT_ROOT, "static"), PROJECT_ROOT]:
-        if os.path.exists(os.path.join(base, "script.js")):
-            return send_from_directory(base, "script.js")
-    return "", 404
+    root_file = os.path.join(
+        ROOT_STATIC_DIR,
+        filename
+    )
+
+    if os.path.isfile(root_file):
+
+        return send_from_directory(
+            ROOT_STATIC_DIR,
+            filename
+        )
+
+    # --------------------------------------------------------
+    # SECOND: EXISTING DASHBOARD STATIC FILES
+    # --------------------------------------------------------
+    #
+    # Example:
+    #
+    # /static/style.css
+    #
+    # comes from:
+    #
+    # project/backend/static/
+    #
+
+    backend_file = os.path.join(
+        BACKEND_STATIC_DIR,
+        filename
+    )
+
+    if os.path.isfile(backend_file):
+
+        return send_from_directory(
+            BACKEND_STATIC_DIR,
+            filename
+        )
+
+    # File doesn't exist in either location
+    return "Static file not found.", 404
 
 
 # ============================================================
@@ -553,11 +629,23 @@ def serve_root_script():
 
 @app.route("/api/farm-details", methods=["POST"])
 def save_farm_details():
+
     if "farmer_id" not in session:
-        return jsonify({"success": False, "message": "Please login to save farm details"}), 401
+
+        return jsonify({
+            "success": False,
+            "message": "Please login to save farm details"
+        }), 401
 
     try:
+
         data = request.get_json()
+
+        if not data:
+            return jsonify({
+                "success": False,
+                "message": "No farm details received"
+            }), 400
 
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
@@ -574,16 +662,25 @@ def save_farm_details():
 
         existing = cursor.fetchone()
 
-        import json
-        items_json = json.dumps(data.get("items", []))
+        items_json = json.dumps(
+            data.get("items", [])
+        )
 
         if existing:
+
             # Update existing record
             cursor.execute(
                 """
                 UPDATE farm_details
-                SET farm_name = ?, location = ?, land_size = ?, farm_type = ?,
-                    farm_conditions = ?, notes = ?, items = ?, updated_at = CURRENT_TIMESTAMP
+                SET
+                    farm_name = ?,
+                    location = ?,
+                    land_size = ?,
+                    farm_type = ?,
+                    farm_conditions = ?,
+                    notes = ?,
+                    items = ?,
+                    updated_at = CURRENT_TIMESTAMP
                 WHERE farmer_id = ?
                 """,
                 (
@@ -597,12 +694,23 @@ def save_farm_details():
                     session["farmer_id"]
                 )
             )
+
         else:
+
             # Insert new record
             cursor.execute(
                 """
                 INSERT INTO farm_details
-                (farmer_id, farm_name, location, land_size, farm_type, farm_conditions, notes, items)
+                (
+                    farmer_id,
+                    farm_name,
+                    location,
+                    land_size,
+                    farm_type,
+                    farm_conditions,
+                    notes,
+                    items
+                )
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
@@ -620,25 +728,44 @@ def save_farm_details():
         conn.commit()
         conn.close()
 
-        return jsonify({"success": True, "message": "Farm details saved successfully"})
+        return jsonify({
+            "success": True,
+            "message": "Farm details saved successfully"
+        })
 
     except Exception as e:
-        return jsonify({"success": False, "message": f"Error saving farm details: {str(e)}"}), 500
 
+        return jsonify({
+            "success": False,
+            "message": f"Error saving farm details: {str(e)}"
+        }), 500
+
+
+# ============================================================
+# GET FARM DETAILS API
+# ============================================================
 
 @app.route("/api/farm-details", methods=["GET"])
 def get_farm_details():
+
     if "farmer_id" not in session:
-        return jsonify({"success": False, "message": "Please login to view farm details"}), 401
+
+        return jsonify({
+            "success": False,
+            "message": "Please login to view farm details"
+        }), 401
 
     try:
+
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
+
         cursor = conn.cursor()
 
         cursor.execute(
             """
-            SELECT * FROM farm_details
+            SELECT *
+            FROM farm_details
             WHERE farmer_id = ?
             ORDER BY updated_at DESC
             LIMIT 1
@@ -647,11 +774,16 @@ def get_farm_details():
         )
 
         farm_details = cursor.fetchone()
+
         conn.close()
 
         if farm_details:
-            import json
-            crops = json.loads(farm_details["items"]) if farm_details["items"] else []
+
+            crops = (
+                json.loads(farm_details["items"])
+                if farm_details["items"]
+                else []
+            )
 
             return jsonify({
                 "success": True,
@@ -666,11 +798,20 @@ def get_farm_details():
                     "updated_at": farm_details["updated_at"]
                 }
             })
+
         else:
-            return jsonify({"success": True, "data": None})
+
+            return jsonify({
+                "success": True,
+                "data": None
+            })
 
     except Exception as e:
-        return jsonify({"success": False, "message": f"Error fetching farm details: {str(e)}"}), 500
+
+        return jsonify({
+            "success": False,
+            "message": f"Error fetching farm details: {str(e)}"
+        }), 500
 
 
 # ============================================================

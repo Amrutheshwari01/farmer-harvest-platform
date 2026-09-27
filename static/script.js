@@ -18,6 +18,7 @@ let farmerData = window.farmerData || {
   phone: "",
   email: ""
 };
+const initialFarmDetails = window.initialFarmDetails || null;
 
 // Display farmer information
 function displayFarmerInfo() {
@@ -297,8 +298,10 @@ function saveDraft(showStatus = false) {
 }
 
 function loadDraft() {
-  const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+  const localDraft = JSON.parse(localStorage.getItem(storageKey) || "null");
+  const saved = localDraft || initialFarmDetails;
   if (!saved) return;
+
   [
     "farmName",
     "location",
@@ -310,15 +313,22 @@ function loadDraft() {
     const field = form.elements[name];
     if (field && saved[name]) field.value = saved[name];
   });
+
   if (saved.items?.length) {
     itemsContainer.innerHTML = saved.items.map(itemTemplate).join("");
   }
+
   renumberRows();
   renderSummary(saved);
   updateProgress();
-  saveStatus.innerHTML =
-    '<span class="save-icon">✓</span><span>Draft restored</span>';
-  lastUpdated.textContent = "Restored from draft";
+
+  saveStatus.innerHTML = localDraft
+    ? '<span class="save-icon">✓</span><span>Draft restored</span>'
+    : '<span class="save-icon">✓</span><span>Saved details loaded</span>';
+
+  lastUpdated.textContent = localDraft
+    ? "Restored from draft"
+    : (saved.updated_at || "Saved on server");
 }
 
 document.querySelectorAll(".mic-btn").forEach((button) => {
@@ -427,6 +437,5 @@ if (localStorage.getItem("farm-theme") === "dark") {
 }
 document.querySelector("#year").textContent = new Date().getFullYear();
 renumberRows();
-localStorage.removeItem(storageKey);
-updateProgress();
+loadDraft();
 displayFarmerInfo();
