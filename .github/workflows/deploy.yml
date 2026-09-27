@@ -89,7 +89,7 @@ jobs:
             set -e
 
             echo "Pulling latest Docker image..."
-            docker pull amrutheshwariv/farmer-harvest-app:latest
+            docker pull amrutheshwariv/farmer-harvest-app:cd-demo-failure
 
             echo "Stopping old container..."
             docker stop farmer-harvest-app 2>/dev/null || true
