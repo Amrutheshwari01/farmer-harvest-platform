@@ -26,9 +26,7 @@ let farmerData = window.farmerData || {
 };
 
 /*
- * IMPORTANT
- *
- * initialFarmDetails comes from Flask/SQLite.
+ * initialFarmDetails comes directly from Flask/SQLite.
  *
  * Example:
  *
@@ -155,6 +153,7 @@ function appendVoiceText(targetId, transcript) {
   const field =
     document.getElementById(targetId);
 
+
   if (!field) {
     return;
   }
@@ -162,6 +161,7 @@ function appendVoiceText(targetId, transcript) {
 
   const sentence =
     transcript.trim();
+
 
   if (!sentence) {
     return;
@@ -180,6 +180,7 @@ function appendVoiceText(targetId, transcript) {
         .slice(-3)
         .join(" ")
         .toLowerCase();
+
 
     const newWords =
       sentence
@@ -952,7 +953,7 @@ function saveDraft(showStatus = false) {
 
 
   /*
-   * LocalStorage is only used as a temporary browser draft.
+   * LocalStorage is only a temporary browser draft.
    *
    * SQLite remains the real source of saved farm details.
    */
@@ -968,7 +969,10 @@ function saveDraft(showStatus = false) {
   renderSummary(data);
 
 
-  if (saveStatus && saveStatus !== false) {
+  if (
+    showStatus &&
+    saveStatus
+  ) {
 
     saveStatus.innerHTML =
       `
@@ -1001,89 +1005,217 @@ function saveDraft(showStatus = false) {
 
 
 // ============================================================
+// LOAD DATABASE FARM DETAILS
+// ============================================================
+
+function loadDatabaseFarmDetails(saved) {
+
+  if (!form || !saved) {
+    return;
+  }
+
+
+  /*
+   * These values come directly from SQLite through Flask.
+   *
+   * Always populate the actual form fields.
+   */
+
+  const farmFields = [
+    "farmName",
+    "location",
+    "landSize",
+    "farmType",
+    "farmConditions",
+    "notes"
+  ];
+
+
+  farmFields.forEach(
+    (name) => {
+
+      const field =
+        form.elements[name];
+
+
+      if (!field) {
+        return;
+      }
+
+
+      const value =
+        saved[name];
+
+
+      if (
+        value !== undefined &&
+        value !== null
+      ) {
+
+        field.value =
+          String(value);
+      }
+    }
+  );
+
+
+  /*
+   * Load saved produce items.
+   */
+
+  let savedItems =
+    Array.isArray(saved.items)
+      ? saved.items
+      : [];
+
+
+  /*
+   * Compatibility with older records that may
+   * have used `crops`.
+   */
+
+  if (
+    !savedItems.length &&
+    Array.isArray(saved.crops)
+  ) {
+
+    savedItems =
+      saved.crops;
+  }
+
+
+  if (
+    itemsContainer &&
+    savedItems.length > 0
+  ) {
+
+    itemsContainer.innerHTML =
+      savedItems
+        .map(itemTemplate)
+        .join("");
+
+  } else if (itemsContainer) {
+
+    itemsContainer.innerHTML =
+      itemTemplate();
+  }
+
+
+  renumberRows();
+
+
+  /*
+   * Render the summary using the values that
+   * are now actually inside the form.
+   */
+
+  renderSummary(
+    getData()
+  );
+
+
+  updateProgress();
+
+
+  /*
+   * Show the user that the information came
+   * from the server/database.
+   */
+
+  if (saveStatus) {
+
+    saveStatus.innerHTML =
+      `
+        <span class="save-icon">✓</span>
+        <span>Saved details loaded</span>
+      `;
+  }
+
+
+  if (lastUpdated) {
+
+    lastUpdated.textContent =
+      saved.updated_at ||
+      "Saved on server";
+  }
+}
+
+
+// ============================================================
 // LOAD SAVED FARM DETAILS
 // ============================================================
 
 function loadDraft() {
 
   /*
-   * VERY IMPORTANT:
+   * IMPORTANT:
    *
-   * DATABASE DATA ALWAYS HAS PRIORITY.
+   * If Flask supplied farm details from SQLite,
+   * those details ALWAYS win.
    *
-   * If Flask gives us initialFarmDetails,
-   * use that information.
-   *
-   * We DO NOT allow old localStorage data
-   * to replace the database information.
+   * Old localStorage data must never overwrite
+   * the database values.
    */
-
-  let saved = null;
-
-
-  // ----------------------------------------------------------
-  // CASE 1:
-  // EXISTING FARM DETAILS FOUND IN DATABASE
-  // ----------------------------------------------------------
 
   if (initialFarmDetails) {
 
-    saved =
-      initialFarmDetails;
-
-
     /*
-     * Remove old browser draft.
-     *
-     * This prevents an old farm name/location/etc.
-     * from coming back later.
+     * Clear any stale browser draft before loading
+     * the server data.
      */
 
     localStorage.removeItem(
       storageKey
     );
 
+
+    loadDatabaseFarmDetails(
+      initialFarmDetails
+    );
+
+
+    return;
   }
 
+
   // ----------------------------------------------------------
-  // CASE 2:
   // NO DATABASE DATA
   // ----------------------------------------------------------
 
-  else {
+  let saved = null;
 
-    const localDraftRaw =
-      localStorage.getItem(
-        storageKey
+
+  const localDraftRaw =
+    localStorage.getItem(
+      storageKey
+    );
+
+
+  if (localDraftRaw) {
+
+    try {
+
+      saved =
+        JSON.parse(
+          localDraftRaw
+        );
+
+    } catch (error) {
+
+      console.warn(
+        "Invalid local draft found. Clearing it."
       );
 
 
-    if (localDraftRaw) {
-
-      try {
-
-        saved =
-          JSON.parse(
-            localDraftRaw
-          );
-
-      } catch (error) {
-
-        console.warn(
-          "Invalid local draft found. Clearing it."
-        );
-
-
-        localStorage.removeItem(
-          storageKey
-        );
-      }
+      localStorage.removeItem(
+        storageKey
+      );
     }
   }
 
 
   // ----------------------------------------------------------
-  // NOTHING TO LOAD
+  // NO SAVED DATA AT ALL
   // ----------------------------------------------------------
 
   if (!saved) {
@@ -1112,55 +1244,42 @@ function loadDraft() {
   }
 
 
-  // ==========================================================
-  // LOAD FARM INFORMATION
-  // ==========================================================
+  // ----------------------------------------------------------
+  // LOAD LOCAL DRAFT
+  // ----------------------------------------------------------
 
-  const farmFields = [
-    "farmName",
-    "location",
-    "landSize",
-    "farmType",
-    "farmConditions",
-    "notes"
-  ];
+  if (form) {
+
+    const farmFields = [
+      "farmName",
+      "location",
+      "landSize",
+      "farmType",
+      "farmConditions",
+      "notes"
+    ];
 
 
-  farmFields.forEach(
-    (name) => {
+    farmFields.forEach(
+      (name) => {
 
-      if (!form) {
-        return;
+        const field =
+          form.elements[name];
+
+
+        if (
+          field &&
+          saved[name] !== undefined &&
+          saved[name] !== null
+        ) {
+
+          field.value =
+            saved[name];
+        }
       }
+    );
+  }
 
-
-      const field =
-        form.elements[name];
-
-
-      if (
-        field &&
-        saved[name] !== undefined &&
-        saved[name] !== null
-      ) {
-
-        field.value =
-          saved[name];
-      }
-    }
-  );
-
-
-  // ==========================================================
-  // LOAD SAVED PRODUCE ITEMS
-  // ==========================================================
-
-  /*
-   * The backend should normally provide `items`.
-   *
-   * This fallback also supports older data that may use
-   * `crops`.
-   */
 
   let savedItems =
     Array.isArray(saved.items)
@@ -1190,18 +1309,10 @@ function loadDraft() {
 
   } else if (itemsContainer) {
 
-    /*
-     * Keep one empty produce row.
-     */
-
     itemsContainer.innerHTML =
       itemTemplate();
   }
 
-
-  // ==========================================================
-  // UPDATE PAGE
-  // ==========================================================
 
   renumberRows();
 
@@ -1212,63 +1323,34 @@ function loadDraft() {
   updateProgress();
 
 
-  // ==========================================================
-  // SAVE STATUS
-  // ==========================================================
+  if (saveStatus) {
 
-  if (initialFarmDetails) {
-
-    if (saveStatus) {
-
-      saveStatus.innerHTML =
-        `
-          <span class="save-icon">✓</span>
-          <span>Saved details loaded</span>
-        `;
-    }
+    saveStatus.innerHTML =
+      `
+        <span class="save-icon">✓</span>
+        <span>Draft restored</span>
+      `;
+  }
 
 
-    if (lastUpdated) {
+  if (lastUpdated) {
 
-      lastUpdated.textContent =
-        initialFarmDetails.updated_at ||
-        "Saved on server";
-    }
-
-  } else {
-
-    if (saveStatus) {
-
-      saveStatus.innerHTML =
-        `
-          <span class="save-icon">✓</span>
-          <span>Draft restored</span>
-        `;
-    }
-
-
-    if (lastUpdated) {
-
-      lastUpdated.textContent =
-        "Restored from draft";
-    }
+    lastUpdated.textContent =
+      "Restored from draft";
   }
 }
 
 
 // ============================================================
-// SCROLL TO ADD HARVEST / PRODUCE SECTION
+// SCROLL TO PRODUCE SECTION
 // ============================================================
 
 function scrollToProduceSection() {
 
   /*
-   * Dashboard button should point to:
+   * Dashboard Add Harvest button points to:
    *
    * /farmer-details#produce-section
-   *
-   * This means the farmer does NOT have to scroll
-   * through the whole Farmer Details page.
    */
 
   if (
@@ -1291,7 +1373,8 @@ function scrollToProduceSection() {
 
 
   /*
-   * Wait until the existing farm details have been loaded.
+   * Wait until the database values have been
+   * loaded into the form before scrolling.
    */
 
   setTimeout(
@@ -1313,10 +1396,8 @@ function scrollToProduceSection() {
 
 
       /*
-       * Put the cursor in the first crop field.
-       *
-       * This makes Add Harvest feel like a direct
-       * "add a crop" action.
+       * Focus the first crop field so Add Harvest
+       * immediately feels like an add-crop action.
        */
 
       setTimeout(
@@ -1337,7 +1418,7 @@ function scrollToProduceSection() {
       );
 
     },
-    300
+    350
   );
 }
 
@@ -1597,8 +1678,6 @@ async function saveToBackend() {
 
       /*
        * Database is now the source of truth.
-       *
-       * Remove the temporary browser draft.
        */
 
       localStorage.removeItem(
@@ -1657,10 +1736,8 @@ if (form) {
         () => {
 
           /*
-           * IMPORTANT:
-           *
            * Reset only resets the browser form.
-           * It does NOT delete farm details from SQLite.
+           * It does NOT delete SQLite data.
            */
 
           if (itemsContainer) {
@@ -1792,6 +1869,15 @@ if (yearElement) {
 // INITIALIZE PAGE
 // ============================================================
 
+/*
+ * IMPORTANT INITIALIZATION ORDER
+ *
+ * 1. Number existing rows.
+ * 2. Load database data / local draft.
+ * 3. Display logged-in farmer information.
+ * 4. Scroll to produce section if Add Harvest was clicked.
+ */
+
 renumberRows();
 
 loadDraft();
@@ -1802,13 +1888,5 @@ displayFarmerInfo();
 // ============================================================
 // HANDLE ADD HARVEST HASH
 // ============================================================
-
-/*
- * Run this AFTER loadDraft().
- *
- * This is important because we want the database farm
- * information to appear first and THEN scroll to the
- * produce section.
- */
 
 scrollToProduceSection();
