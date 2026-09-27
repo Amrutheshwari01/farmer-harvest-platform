@@ -2,15 +2,114 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
+    font-family: "DM Sans", Arial, sans-serif;
 }
 
 body {
+    margin: 0;
+    font-family: "DM Sans", Arial, sans-serif;
     background: #f4f8f3;
     color: #333;
     min-height: 100vh;
 }
 
+/* =========================
+   AUTH STYLES
+   ========================= */
+
+.auth-container {
+    width: 420px;
+    background: white;
+    padding: 35px;
+    border-radius: 15px;
+
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+.logo {
+    text-align: center;
+    font-size: 45px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 6px;
+
+    font-weight: bold;
+}
+
+input {
+    width: 100%;
+
+    padding: 12px;
+
+    border: 1px solid #ccc;
+    border-radius: 7px;
+
+    font-size: 14px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #4caf50;
+}
+
+button {
+    width: 100%;
+
+    margin-top: 25px;
+    padding: 13px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: #4caf50;
+    color: white;
+
+    font-size: 16px;
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+button:hover {
+    background: #388e3c;
+}
+
+.message {
+    background: #fff3cd;
+    color: #664d03;
+
+    padding: 10px;
+    margin-bottom: 15px;
+
+    border-radius: 6px;
+
+    font-size: 14px;
+}
+
+.login-link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.login-link a {
+    color: #388e3c;
+    font-weight: bold;
+    text-decoration: none;
+}
 
 /* =========================
    NAVBAR
@@ -28,9 +127,10 @@ body {
     padding: 0 35px;
 }
 
-.logo {
+.navbar .logo {
     font-size: 23px;
     font-weight: bold;
+    text-align: left;
 }
 
 .nav-right {
@@ -59,7 +159,6 @@ body {
     background: #e8f5e9;
 }
 
-
 /* =========================
    DASHBOARD LAYOUT
    ========================= */
@@ -68,7 +167,6 @@ body {
     display: flex;
     min-height: calc(100vh - 70px);
 }
-
 
 /* =========================
    SIDEBAR
@@ -128,7 +226,6 @@ body {
     color: #c62828;
 }
 
-
 /* =========================
    MAIN CONTENT
    ========================= */
@@ -140,7 +237,6 @@ body {
 
     max-width: 1400px;
 }
-
 
 /* =========================
    WELCOME SECTION
@@ -180,6 +276,9 @@ body {
     margin-bottom: 8px;
 
     font-size: 30px;
+
+    font-weight: 600;
+    text-align: left;
 }
 
 .welcome-section p {
@@ -212,7 +311,6 @@ body {
 
     margin-right: 7px;
 }
-
 
 /* =========================
    DASHBOARD CARDS
@@ -250,6 +348,8 @@ body {
     font-size: 21px;
 
     margin-bottom: 10px;
+
+    font-weight: 600;
 }
 
 .dashboard-card p {
@@ -306,7 +406,6 @@ body {
     font-weight: bold;
 }
 
-
 /* =========================
    CONTENT SECTIONS
    ========================= */
@@ -339,8 +438,9 @@ body {
     color: #2e7d32;
 
     font-size: 24px;
-}
 
+    font-weight: 600;
+}
 
 /* =========================
    PROFILE
@@ -377,7 +477,6 @@ body {
 .profile-active {
     color: #2e7d32;
 }
-
 
 /* =========================
    HARVEST PLACEHOLDER
@@ -423,7 +522,6 @@ body {
     color: #888 !important;
 }
 
-
 /* =========================
    SETTINGS
    ========================= */
@@ -464,7 +562,6 @@ body {
     background: #a51d1d;
 }
 
-
 /* =========================
    FOOTER
    ========================= */
@@ -483,6 +580,226 @@ footer p {
     margin-bottom: 5px;
 }
 
+/* =========================
+   FARM DETAILS SUMMARY STYLES
+   ========================= */
+
+.farmer-harvest-info {
+    margin: 20px 0;
+
+    padding: 15px;
+
+    background: white;
+
+    border-radius: 8px;
+
+    border: 1px solid #e0e0e0;
+
+    text-align: left;
+}
+
+.farmer-harvest-info p {
+    margin-bottom: 8px;
+
+    color: #444;
+
+    font-size: 14px;
+}
+
+.farmer-harvest-info strong {
+    color: #2e7d32;
+
+    font-weight: bold;
+}
+
+.farm-details-summary {
+    margin-top: 20px;
+
+    border: 1px solid #e0e0e0;
+
+    border-radius: 10px;
+
+    background: white;
+
+    overflow: hidden;
+}
+
+.farm-summary-header {
+    background: #e8f5e9;
+
+    padding: 20px;
+
+    border-bottom: 1px solid #e0e0e0;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+}
+
+.farm-summary-header h3 {
+    color: #2e7d32;
+
+    margin: 0;
+
+    font-size: 20px;
+
+    font-weight: 600;
+}
+
+.last-updated {
+    color: #666;
+
+    font-size: 12px;
+
+    margin: 0;
+}
+
+.farm-summary-content {
+    padding: 25px;
+}
+
+.farm-summary-section {
+    margin-bottom: 25px;
+}
+
+.farm-summary-section:last-child {
+    margin-bottom: 0;
+}
+
+.farm-summary-section h4 {
+    color: #2e7d32;
+
+    font-size: 16px;
+
+    margin-bottom: 15px;
+
+    padding-bottom: 8px;
+
+    border-bottom: 2px solid #e8f5e9;
+
+    font-weight: 600;
+}
+
+.summary-grid {
+    display: grid;
+
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+
+    gap: 15px;
+}
+
+.summary-item {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+.summary-item .label {
+    color: #666;
+
+    font-size: 12px;
+
+    font-weight: bold;
+}
+
+.summary-item .value {
+    color: #333;
+
+    font-size: 14px;
+}
+
+.produce-grid {
+    display: grid;
+
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+
+    gap: 15px;
+}
+
+.produce-card {
+    border: 1px solid #e0e0e0;
+
+    border-radius: 8px;
+
+    padding: 15px;
+
+    background: #f8fcf8;
+}
+
+.produce-header {
+    margin-bottom: 10px;
+
+    padding-bottom: 8px;
+
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.produce-header strong {
+    color: #2e7d32;
+
+    font-size: 15px;
+
+    font-weight: 600;
+}
+
+.produce-details p {
+    margin: 5px 0;
+
+    color: #444;
+
+    font-size: 13px;
+}
+
+.produce-details strong {
+    color: #666;
+
+    font-weight: bold;
+}
+
+.conditions-text,
+.notes-text {
+    color: #444;
+
+    line-height: 1.6;
+
+    font-size: 14px;
+
+    white-space: pre-wrap;
+}
+
+.farm-summary-actions {
+    padding: 20px 25px;
+
+    border-top: 1px solid #e0e0e0;
+
+    background: #f8fcf8;
+}
+
+.edit-btn {
+    display: inline-block;
+
+    background: #2e7d32;
+
+    color: white;
+
+    padding: 10px 20px;
+
+    border-radius: 6px;
+
+    text-decoration: none;
+
+    font-weight: bold;
+
+    transition: background 0.2s;
+}
+
+.edit-btn:hover {
+    background: #1b5e20;
+}
 
 /* =========================
    MOBILE
@@ -572,3 +889,279 @@ footer p {
     }
 
 }
+
+/* ============================================================
+   POLISHED FARM DETAILS SUMMARY - RESPONSIVE OVERRIDES
+   ============================================================ */
+
+
+/* =========================================================
+   FARM HARVEST PORTAL — FARM SUMMARY POLISH
+   Paste at the VERY END of backend/static/style.css
+   ========================================================= */
+
+.main-content .farm-details-summary {
+    margin-top: 22px;
+    border: 1px solid #dfe9df;
+    border-radius: 18px;
+    background: #ffffff;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(37, 72, 43, 0.07);
+}
+
+/* Header */
+.main-content .farm-summary-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #f3faf3, #e9f6ea);
+    border-bottom: 1px solid #dfe9df;
+}
+
+.main-content .farm-summary-header h3 {
+    margin: 0;
+    color: #173b22;
+    font-size: 20px;
+    line-height: 1.25;
+    font-weight: 700;
+}
+
+.main-content .farm-summary-header h3::first-letter {
+    font-size: 18px;
+}
+
+.main-content .last-updated {
+    margin: 0;
+    color: #718074;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+/* Main content */
+.main-content .farm-summary-content {
+    padding: 22px 24px;
+}
+
+.main-content .farm-summary-section {
+    margin: 0 0 24px;
+}
+
+.main-content .farm-summary-section:last-child {
+    margin-bottom: 0;
+}
+
+.main-content .farm-summary-section h4 {
+    margin: 0 0 13px;
+    padding: 0;
+    border: 0;
+    color: #246b35;
+    font-size: 14px;
+    line-height: 1.3;
+    font-weight: 700;
+}
+
+/* Farm information */
+.main-content .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.main-content .summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    padding: 12px 14px;
+    border: 1px solid #e5eee5;
+    border-radius: 11px;
+    background: #fbfdfb;
+}
+
+.main-content .summary-item .label {
+    color: #7a877c;
+    font-size: 11px;
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+.main-content .summary-item .value {
+    color: #26352a;
+    font-size: 14px;
+    line-height: 1.35;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+/* Produce */
+.main-content .produce-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 12px;
+}
+
+.main-content .produce-card {
+    padding: 15px;
+    border: 1px solid #dce9dd;
+    border-radius: 13px;
+    background: #f8fcf8;
+}
+
+.main-content .produce-header {
+    margin: 0 0 11px;
+    padding: 0 0 9px;
+    border-bottom: 1px solid #e1ebe2;
+}
+
+.main-content .produce-header strong {
+    color: #1f6531;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.main-content .produce-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 12px;
+}
+
+.main-content .produce-details p {
+    margin: 0;
+    color: #536057;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.main-content .produce-details strong {
+    color: #33443a;
+    font-weight: 700;
+}
+
+/* Conditions / notes */
+.main-content .conditions-text,
+.main-content .notes-text {
+    margin: 0;
+    padding: 13px 15px;
+    border-left: 3px solid #70a77a;
+    border-radius: 0 10px 10px 0;
+    background: #f7faf7;
+    color: #526057;
+    font-size: 13px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+}
+
+/* Bottom action */
+.main-content .farm-summary-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 15px 24px;
+    background: #fbfdfb;
+    border-top: 1px solid #e5eee5;
+}
+
+.main-content .edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 10px 15px;
+    border-radius: 9px;
+    background: #2e7d32;
+    color: #fff;
+    font-size: 13px;
+    line-height: 1;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform .15s ease, background .15s ease;
+}
+
+.main-content .edit-btn:hover {
+    background: #246b2a;
+    transform: translateY(-1px);
+}
+
+/* Tablet */
+@media (max-width: 800px) {
+    .main-content .farm-summary-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+        padding: 17px 18px;
+    }
+
+    .main-content .last-updated {
+        white-space: normal;
+    }
+
+    .main-content .farm-summary-content {
+        padding: 18px;
+    }
+
+    .main-content .summary-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .main-content .farm-summary-actions {
+        padding: 13px 18px;
+    }
+}
+
+/* Phone */
+@media (max-width: 520px) {
+    .main-content .farm-details-summary {
+        margin-top: 16px;
+        border-radius: 15px;
+    }
+
+    .main-content .farm-summary-header h3 {
+        font-size: 17px;
+    }
+
+    .main-content .farm-summary-content {
+        padding: 16px;
+    }
+
+    .main-content .farm-summary-section {
+        margin-bottom: 19px;
+    }
+
+    .main-content .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .main-content .summary-item {
+        padding: 10px 12px;
+    }
+
+    .main-content .summary-item .value {
+        font-size: 13px;
+    }
+
+    .main-content .produce-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .main-content .produce-details {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .main-content .farm-summary-actions {
+        justify-content: stretch;
+    }
+
+    .main-content .edit-btn {
+        width: 100%;
+    }
+}
+
+/* Very small phones */
+@media (max-width: 360px) {
+    .main-content .produce-details {
+        grid-template-columns: 1fr;
+    }
+}
+

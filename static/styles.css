@@ -1124,3 +1124,236 @@ footer {
   vertical-align: middle;
   margin-right: 5px;
 }
+/* =========================================================
+   FARMER DETAILS — COMPACT / RESPONSIVE UI FIX
+   Add this at the END of static/styles.css
+   ========================================================= */
+
+/* Give the preview card a cleaner internal layout */
+.preview-card {
+  padding: 22px;
+}
+
+.preview-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.preview-top h2 {
+  margin: 4px 0 0;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.summary-box {
+  min-height: 0;
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 16px;
+}
+
+.empty-state {
+  min-height: 190px;
+  padding: 12px 8px;
+  gap: 0;
+}
+
+.empty-icon {
+  width: 42px;
+  height: 42px;
+  margin-bottom: 12px;
+}
+
+.empty-state h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.empty-state p {
+  max-width: 300px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.empty-line {
+  width: 68%;
+  height: 6px;
+  margin-top: 18px;
+}
+
+.empty-line.short {
+  width: 42%;
+  margin-top: 8px;
+}
+
+.preview-footer {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: 13px;
+  padding: 0 2px;
+  line-height: 1.4;
+}
+
+.preview-footer strong {
+  font-weight: 700;
+}
+
+/* Saved summary should stay compact too */
+.summary-content {
+  padding: 2px;
+}
+
+.summary-name {
+  font-size: 21px;
+}
+
+.summary-location {
+  margin-bottom: 13px;
+}
+
+.summary-meta {
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.summary-meta span {
+  padding: 5px 8px;
+}
+
+.summary-content h4 {
+  margin: 13px 0 6px;
+}
+
+/* Better integrated-page spacing */
+.farmer-details-main .layout {
+  align-items: start;
+}
+
+.farmer-details-main .form-card {
+  min-width: 0;
+}
+
+.farmer-details-main .preview-card {
+  min-width: 0;
+}
+
+/* Tablet */
+@media (max-width: 980px) {
+  .farmer-details-main .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .farmer-details-main .preview-card {
+    order: 2;
+  }
+
+  .farmer-details-main .form-card {
+    order: 1;
+  }
+
+  .summary-box {
+    min-height: 0;
+  }
+
+  .empty-state {
+    min-height: 170px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 620px) {
+  .farmer-details-main .preview-card,
+  .farmer-details-main .form-card {
+    padding: 17px;
+    border-radius: 16px;
+  }
+
+  .preview-top {
+    align-items: flex-start;
+  }
+
+  .preview-top h2 {
+    font-size: 20px;
+  }
+
+  .live-dot {
+    font-size: 10px;
+    white-space: nowrap;
+  }
+
+  .summary-box {
+    margin-top: 13px;
+    padding: 13px;
+  }
+
+  .empty-state {
+    min-height: 155px;
+    padding: 8px;
+  }
+
+  .empty-icon {
+    width: 38px;
+    height: 38px;
+    margin-bottom: 9px;
+    font-size: 18px;
+  }
+
+  .empty-state h3 {
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+
+  .empty-state p {
+    max-width: 260px;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .empty-line {
+    width: 62%;
+    height: 5px;
+    margin-top: 14px;
+  }
+
+  .empty-line.short {
+    width: 38%;
+    margin-top: 6px;
+  }
+
+  .preview-footer {
+    margin-top: 10px;
+    font-size: 10px;
+  }
+
+  .preview-footer strong {
+    font-size: 10px;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 400px) {
+  .preview-card {
+    padding: 14px !important;
+  }
+
+  .summary-box {
+    padding: 10px;
+  }
+
+  .empty-state {
+    min-height: 140px;
+  }
+
+  .empty-state h3 {
+    font-size: 15px;
+  }
+
+  .empty-state p {
+    font-size: 10.5px;
+  }
+}

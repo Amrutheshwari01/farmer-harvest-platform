@@ -567,59 +567,40 @@ def farmer_details():
 @app.route("/static/<path:filename>", endpoint="static")
 def serve_static(filename):
 
-    # --------------------------------------------------------
-    # FIRST: FARMER DETAILS / HARVEST STATIC FILES
-    # --------------------------------------------------------
-    #
-    # Examples:
-    #
-    # /static/styles.css
-    # /static/script.js
-    # /static/images/mic-icon.svg
-    #
-    # These come from:
-    #
-    # project/static/
-    #
-
-    root_file = os.path.join(
-        ROOT_STATIC_DIR,
-        filename
-    )
-
-    if os.path.isfile(root_file):
-
-        return send_from_directory(
-            ROOT_STATIC_DIR,
-            filename
-        )
+    # IMPORTANT:
+    # Both project/static/ and backend/static/ contain CSS/JS files.
+    # The dashboard uses /static/style.css, so backend/static MUST be
+    # checked first. Farmer Details uses /static/styles.css and /static/script.js,
+    # which will fall through to project/static/.
 
     # --------------------------------------------------------
-    # SECOND: EXISTING DASHBOARD STATIC FILES
+    # FIRST: DASHBOARD STATIC FILES
     # --------------------------------------------------------
-    #
-    # Example:
-    #
-    # /static/style.css
-    #
-    # comes from:
-    #
-    # project/backend/static/
-    #
-
     backend_file = os.path.join(
         BACKEND_STATIC_DIR,
         filename
     )
 
     if os.path.isfile(backend_file):
-
         return send_from_directory(
             BACKEND_STATIC_DIR,
             filename
         )
 
-    # File doesn't exist in either location
+    # --------------------------------------------------------
+    # SECOND: FARMER DETAILS / HARVEST STATIC FILES
+    # --------------------------------------------------------
+    root_file = os.path.join(
+        ROOT_STATIC_DIR,
+        filename
+    )
+
+    if os.path.isfile(root_file):
+        return send_from_directory(
+            ROOT_STATIC_DIR,
+            filename
+        )
+
     return "Static file not found.", 404
 
 
