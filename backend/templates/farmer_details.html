@@ -2,292 +2,1245 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#2e7d32" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
+    <meta
+      name="theme-color"
+      content="#2e7d32"
+    />
+
     <title>Farmer Details | Farmer Harvest Portal</title>
+
+    <!-- =====================================================
+         GOOGLE FONT
+         ===================================================== -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='app-shell.css') }}" />
+
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+
+    <!-- =====================================================
+         APPLICATION STYLES
+         ===================================================== -->
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='app-shell.css') }}"
+    />
+
+
+    <!-- =====================================================
+         HARVEST SECTION STYLES
+         ===================================================== -->
+
+    <style>
+      /*
+       * The Dashboard "Add Harvest" button opens:
+       *
+       * /farmer-details#produce-section
+       *
+       * This makes the browser scroll directly to the
+       * Available Vegetables & Produce section.
+       */
+
+      #produce-section {
+        scroll-margin-top: 100px;
+      }
+
+
+      /*
+       * Briefly highlight the produce section when the page
+       * is opened using the Add Harvest button.
+       */
+
+      #produce-section:target {
+        animation: harvestHighlight 1.2s ease;
+      }
+
+
+      @keyframes harvestHighlight {
+        0% {
+          box-shadow: 0 0 0 5px rgba(46, 125, 50, 0.18);
+          border-radius: 16px;
+        }
+
+        100% {
+          box-shadow: none;
+        }
+      }
+
+
+      /*
+       * Produce section heading
+       */
+
+      .harvest-section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 20px;
+        margin-top: 35px;
+        margin-bottom: 20px;
+      }
+
+
+      .harvest-section-heading h3 {
+        margin: 5px 0 0;
+      }
+
+
+      .harvest-section-heading .secondary-btn {
+        flex-shrink: 0;
+      }
+
+
+      /*
+       * Mobile layout
+       */
+
+      @media (max-width: 700px) {
+        .harvest-section-heading {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .harvest-section-heading .secondary-btn {
+          width: 100%;
+        }
+      }
+    </style>
   </head>
+
+
   <body>
+
+    <!-- =====================================================
+         TOP NAVIGATION
+         ===================================================== -->
+
     <header class="app-navbar">
-      <div class="app-logo">🌾 Farmer Harvest Portal</div>
-      <div class="app-nav-right">
-        <span class="farmer-name">{{ farmer_name }}</span>
-        <a href="{{ url_for('logout') }}" class="app-logout">Logout</a>
+
+      <div class="app-logo">
+        🌾 Farmer Harvest Portal
       </div>
+
+
+      <div class="app-nav-right">
+
+        <span class="farmer-name">
+          {{ farmer_name }}
+        </span>
+
+
+        <a
+          href="{{ url_for('logout') }}"
+          class="app-logout"
+        >
+          Logout
+        </a>
+
+      </div>
+
     </header>
 
+
+
+    <!-- =====================================================
+         APPLICATION LAYOUT
+         ===================================================== -->
+
     <div class="app-layout">
+
+
+      <!-- ===================================================
+           SIDEBAR
+           =================================================== -->
+
       <aside class="app-sidebar">
-        <div class="app-sidebar-title">Dashboard</div>
-        <a href="{{ url_for('dashboard') }}" class="app-sidebar-link">🏠 Home</a>
-        <a href="{{ url_for('dashboard') }}#profile" class="app-sidebar-link">👤 My Profile</a>
-        <a href="{{ url_for('dashboard') }}#harvests" class="app-sidebar-link">🌾 My Harvests</a>
-        <a href="{{ url_for('farmer_details') }}" class="app-sidebar-link active">🧾 Farmer Details</a>
-        <a href="{{ url_for('dashboard') }}#settings" class="app-sidebar-link">⚙️ Settings</a>
-        <a href="{{ url_for('logout') }}" class="app-sidebar-link app-sidebar-logout">🚪 Logout</a>
+
+        <div class="app-sidebar-title">
+          Dashboard
+        </div>
+
+
+        <!-- HOME -->
+
+        <a
+          href="{{ url_for('dashboard') }}"
+          class="app-sidebar-link"
+        >
+          🏠 Home
+        </a>
+
+
+        <!-- PROFILE -->
+
+        <a
+          href="{{ url_for('dashboard') }}#profile"
+          class="app-sidebar-link"
+        >
+          👤 My Profile
+        </a>
+
+
+        <!-- HARVESTS -->
+
+        <a
+          href="{{ url_for('dashboard') }}#harvests"
+          class="app-sidebar-link"
+        >
+          🌾 My Harvests
+        </a>
+
+
+        <!-- FARMER DETAILS -->
+
+        <a
+          href="{{ url_for('farmer_details') }}"
+          class="app-sidebar-link active"
+        >
+          🧾 Farmer Details
+        </a>
+
+
+        <!-- SETTINGS -->
+
+        <a
+          href="{{ url_for('dashboard') }}#settings"
+          class="app-sidebar-link"
+        >
+          ⚙️ Settings
+        </a>
+
+
+        <!-- LOGOUT -->
+
+        <a
+          href="{{ url_for('logout') }}"
+          class="app-sidebar-link app-sidebar-logout"
+        >
+          🚪 Logout
+        </a>
+
       </aside>
 
+
+
+      <!-- ===================================================
+           MAIN CONTENT
+           =================================================== -->
+
       <main class="app-main farmer-details-main">
+
+
+        <!-- =================================================
+             PAGE HEADER
+             ================================================= -->
+
         <div class="integrated-heading">
+
           <div>
-            <p class="integrated-kicker">FARM MANAGEMENT</p>
-            <h1>Farmer Details</h1>
-            <p>Manage your farm, produce, quantity, quality and pricing details from the same Farmer Harvest Portal.</p>
+
+            <p class="integrated-kicker">
+              FARM MANAGEMENT
+            </p>
+
+
+            <h1>
+              Farmer Details
+            </h1>
+
+
+            <p>
+              Manage your farm, produce, quantity, quality
+              and pricing details from the same Farmer Harvest Portal.
+            </p>
+
           </div>
-          <a href="{{ url_for('dashboard') }}" class="integrated-back">← Dashboard</a>
+
+
+          <a
+            href="{{ url_for('dashboard') }}"
+            class="integrated-back"
+          >
+            ← Dashboard
+          </a>
+
         </div>
+
+
 
         <div class="page-shell">
-<section class="hero-stats" aria-label="farm summary stats">
-        <div class="stat-box">
-          <span class="stat-icon">🌱</span>
-          <div>
-            <span>Fresh crops</span><strong>24<small>+</small></strong>
-          </div>
-        </div>
-        <div class="stat-box">
-          <span class="stat-icon">☀</span>
-          <div><span>Daily supply</span><strong>High</strong></div>
-        </div>
-        <div class="stat-box">
-          <span class="stat-icon">✦</span>
-          <div><span>Quality score</span><strong>Top</strong></div>
-        </div>
-        <div class="save-status" id="saveStatus">
-          <span class="save-icon">✓</span><span>Drafts save automatically</span>
-        </div>
-      </section>
 
-      <div class="progress-wrap" aria-label="Form completion">
-        <div class="progress-label">
-          <span>Profile completion</span><strong id="progressText">0%</strong>
-        </div>
-        <div class="progress-track">
-          <div class="progress-bar" id="progressBar"></div>
-        </div>
-      </div>
 
-      <section class="layout">
-        <section class="card form-card">
-          <div class="card-heading">
-            <div>
-              <p class="section-kicker">01 — Your farm</p>
-              <h2>Farmer &amp; Farm Information</h2>
-            </div>
-            <span class="heading-badge">Required fields marked *</span>
-          </div>
+          <!-- =================================================
+               FARM SUMMARY STATS
+               ================================================= -->
 
-          <!-- Farmer Information Display -->
-          <div class="farmer-info-display" id="farmerInfoDisplay" style="display: none;">
-            <div class="farmer-info-card">
-              <h3>Farmer Information</h3>
-              <div class="farmer-details">
-                <p><strong>Name:</strong> <span id="displayFarmerName"></span></p>
-                <p><strong>Phone:</strong> <span id="displayPhone"></span></p>
-                <p><strong>Email:</strong> <span id="displayEmail"></span></p>
-              </div>
-            </div>
-          </div>
+          <section
+            class="hero-stats"
+            aria-label="farm summary stats"
+          >
 
-          <form id="farmForm">
-            <div class="grid two-columns">
-              <label
-                ><span>Farm Name</span
-                ><input
-                  type="text"
-                  name="farmName"
-                  placeholder="Farm or orchard name"
-              /></label>
-              <label
-                ><span>Location</span
-                ><input
-                  type="text"
-                  name="location"
-                  placeholder="Village / town / district"
-              /></label>
-              <label
-                ><span>Total Land Size</span
-                ><input type="text" name="landSize" placeholder="e.g. 4 acres"
-              /></label>
-              <label
-                ><span>Farm Type</span
-                ><select name="farmType">
-                  <option value="">Select farm type</option>
-                  <option>Vegetable Farm</option>
-                  <option>Fruit Farm</option>
-                  <option>Mixed Farm</option>
-                  <option>Organic Farm</option>
-                </select></label
-              >
-            </div>
+            <!-- FRESH CROPS -->
 
-            <div class="section-heading">
+            <div class="stat-box">
+
+              <span class="stat-icon">
+                🌱
+              </span>
+
+
               <div>
-                <p class="section-kicker">02 — What's growing</p>
-                <h3>Available Vegetables &amp; Produce</h3>
+
+                <span>
+                  Fresh crops
+                </span>
+
+
+                <strong>
+                  24<small>+</small>
+                </strong>
+
               </div>
-              <button type="button" class="secondary-btn" id="addItemBtn">
-                <span>+</span> Add Item
-              </button>
-            </div>
-            <div id="itemsContainer" class="items-container">
-              <div class="produce-row">
-                <div class="row-number">01</div>
-                <label
-                  ><span>Vegetable / Crop</span
-                  ><input type="text" name="cropName" placeholder="e.g. Tomato"
-                /></label>
-                <label
-                  ><span>Available Quantity</span
-                  ><input type="text" name="quantity" placeholder="e.g. 200 kg"
-                /></label>
-                <label
-                  ><span>Quality</span
-                  ><select name="quality">
-                    <option value="">Select</option>
-                    <option>Excellent</option>
-                    <option>Good</option>
-                    <option>Average</option>
-                    <option>Fresh Harvest</option>
-                  </select></label
-                >
-                <label
-                  ><span>Price / Unit</span
-                  ><input type="text" name="price" placeholder="e.g. 40 / kg"
-                /></label>
-                <label
-                  ><span>Availability</span
-                  ><input
-                    type="text"
-                    name="availability"
-                    placeholder="e.g. Daily / Seasonal"
-                  /></label>
-                <button
-                  type="button"
-                  class="remove-btn"
-                  aria-label="Remove item">
-                  ×
-                </button>
-              </div>
+
             </div>
 
-            <div class="grid two-columns extra-fields">
-              <div class="voice-field">
-                <label
-                  ><span>Farm Conditions</span
-                  ><textarea
-                    id="farmConditions"
-                    name="farmConditions"
-                    rows="4"
-                    placeholder="Describe soil health, irrigation, or special practices..."></textarea>
-                </label>
-                <div class="voice-tools">
-                  <select class="voice-language" data-target="farmConditions">
-                    <option value="en-US">English</option>
-                    <option value="hi-IN">Hindi</option>
-                    <option value="bn-IN">Bangla</option>
-                    <option value="ta-IN">Tamil</option>
-                    <option value="te-IN">Telugu</option>
-                    <option value="mr-IN">Marathi</option>
-                    <option value="kn-IN">Kannada</option>
-                    <option value="ml-IN">Malayalam</option>
-                    <option value="gu-IN">Gujarati</option>
-                    <option value="es-ES">Spanish</option>
-                    <option value="fr-FR">French</option>
-                    <option value="de-DE">German</option>
-                  </select>
+
+            <!-- DAILY SUPPLY -->
+
+            <div class="stat-box">
+
+              <span class="stat-icon">
+                ☀
+              </span>
+
+
+              <div>
+
+                <span>
+                  Daily supply
+                </span>
+
+
+                <strong>
+                  High
+                </strong>
+
+              </div>
+
+            </div>
+
+
+            <!-- QUALITY SCORE -->
+
+            <div class="stat-box">
+
+              <span class="stat-icon">
+                ✦
+              </span>
+
+
+              <div>
+
+                <span>
+                  Quality score
+                </span>
+
+
+                <strong>
+                  Top
+                </strong>
+
+              </div>
+
+            </div>
+
+
+            <!-- SAVE STATUS -->
+
+            <div
+              class="save-status"
+              id="saveStatus"
+            >
+
+              <span class="save-icon">
+                ✓
+              </span>
+
+
+              <span>
+                Drafts save automatically
+              </span>
+
+            </div>
+
+          </section>
+
+
+
+          <!-- =================================================
+               PROGRESS
+               ================================================= -->
+
+          <div
+            class="progress-wrap"
+            aria-label="Form completion"
+          >
+
+            <div class="progress-label">
+
+              <span>
+                Profile completion
+              </span>
+
+
+              <strong id="progressText">
+                0%
+              </strong>
+
+            </div>
+
+
+            <div class="progress-track">
+
+              <div
+                class="progress-bar"
+                id="progressBar"
+              ></div>
+
+            </div>
+
+          </div>
+
+
+
+          <!-- =================================================
+               MAIN FORM LAYOUT
+               ================================================= -->
+
+          <section class="layout">
+
+
+            <!-- =================================================
+                 FARM FORM
+                 ================================================= -->
+
+            <section class="card form-card">
+
+
+              <!-- =================================================
+                   FARM INFORMATION HEADER
+                   ================================================= -->
+
+              <div class="card-heading">
+
+                <div>
+
+                  <p class="section-kicker">
+                    01 — Your farm
+                  </p>
+
+
+                  <h2>
+                    Farmer &amp; Farm Information
+                  </h2>
+
+                </div>
+
+
+                <span class="heading-badge">
+                  Required fields marked *
+                </span>
+
+              </div>
+
+
+
+              <!-- =================================================
+                   FARMER INFORMATION
+                   ================================================= -->
+
+              <div
+                class="farmer-info-display"
+                id="farmerInfoDisplay"
+                style="display: none;"
+              >
+
+                <div class="farmer-info-card">
+
+                  <h3>
+                    Farmer Information
+                  </h3>
+
+
+                  <div class="farmer-details">
+
+                    <p>
+                      <strong>Name:</strong>
+
+                      <span id="displayFarmerName"></span>
+                    </p>
+
+
+                    <p>
+                      <strong>Phone:</strong>
+
+                      <span id="displayPhone"></span>
+                    </p>
+
+
+                    <p>
+                      <strong>Email:</strong>
+
+                      <span id="displayEmail"></span>
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+
+              <!-- =================================================
+                   FARM FORM
+                   ================================================= -->
+
+              <form id="farmForm">
+
+
+                <!-- =================================================
+                     BASIC FARM INFORMATION
+                     ================================================= -->
+
+                <div class="grid two-columns">
+
+
+                  <!-- FARM NAME -->
+
+                  <label>
+
+                    <span>
+                      Farm Name
+                    </span>
+
+
+                    <input
+                      type="text"
+                      name="farmName"
+                      placeholder="Farm or orchard name"
+                    />
+
+                  </label>
+
+
+
+                  <!-- LOCATION -->
+
+                  <label>
+
+                    <span>
+                      Location
+                    </span>
+
+
+                    <input
+                      type="text"
+                      name="location"
+                      placeholder="Village / town / district"
+                    />
+
+                  </label>
+
+
+
+                  <!-- LAND SIZE -->
+
+                  <label>
+
+                    <span>
+                      Total Land Size
+                    </span>
+
+
+                    <input
+                      type="text"
+                      name="landSize"
+                      placeholder="e.g. 4 acres"
+                    />
+
+                  </label>
+
+
+
+                  <!-- FARM TYPE -->
+
+                  <label>
+
+                    <span>
+                      Farm Type
+                    </span>
+
+
+                    <select name="farmType">
+
+                      <option value="">
+                        Select farm type
+                      </option>
+
+
+                      <option>
+                        Vegetable Farm
+                      </option>
+
+
+                      <option>
+                        Fruit Farm
+                      </option>
+
+
+                      <option>
+                        Mixed Farm
+                      </option>
+
+
+                      <option>
+                        Organic Farm
+                      </option>
+
+                    </select>
+
+                  </label>
+
+                </div>
+
+
+
+                <!-- =================================================
+                     PRODUCE / HARVEST SECTION
+                     =================================================
+
+                     IMPORTANT:
+                     This ID is used by the Dashboard Add Harvest
+                     button:
+
+                     /farmer-details#produce-section
+
+                     The user therefore lands directly on this
+                     section instead of opening another page.
+                     ================================================= -->
+
+                <div
+                  id="produce-section"
+                  class="section-heading harvest-section-heading"
+                >
+
+                  <div>
+
+                    <p class="section-kicker">
+                      02 — What's growing
+                    </p>
+
+
+                    <h3>
+                      Available Vegetables &amp; Produce
+                    </h3>
+
+                  </div>
+
+
+                  <!-- ADD ITEM -->
+
                   <button
                     type="button"
-                    class="mic-btn"
-                    data-target="farmConditions">
-                    <img src="{{ url_for('static', filename='images/mic-icon.svg') }}" alt="Microphone" class="mic-icon"> Speak
+                    class="secondary-btn"
+                    id="addItemBtn"
+                  >
+
+                    <span>
+                      +
+                    </span>
+
+                    Add Item
+
                   </button>
+
                 </div>
+
+
+
+                <!-- =================================================
+                     PRODUCE ITEMS
+                     ================================================= -->
+
+                <div
+                  id="itemsContainer"
+                  class="items-container"
+                >
+
+                  <!-- DEFAULT PRODUCE ROW -->
+
+                  <div class="produce-row">
+
+
+                    <!-- ROW NUMBER -->
+
+                    <div class="row-number">
+                      01
+                    </div>
+
+
+                    <!-- CROP -->
+
+                    <label>
+
+                      <span>
+                        Vegetable / Crop
+                      </span>
+
+
+                      <input
+                        type="text"
+                        name="cropName"
+                        placeholder="e.g. Tomato"
+                      />
+
+                    </label>
+
+
+                    <!-- QUANTITY -->
+
+                    <label>
+
+                      <span>
+                        Available Quantity
+                      </span>
+
+
+                      <input
+                        type="text"
+                        name="quantity"
+                        placeholder="e.g. 200 kg"
+                      />
+
+                    </label>
+
+
+                    <!-- QUALITY -->
+
+                    <label>
+
+                      <span>
+                        Quality
+                      </span>
+
+
+                      <select name="quality">
+
+                        <option value="">
+                          Select
+                        </option>
+
+
+                        <option>
+                          Excellent
+                        </option>
+
+
+                        <option>
+                          Good
+                        </option>
+
+
+                        <option>
+                          Average
+                        </option>
+
+
+                        <option>
+                          Fresh Harvest
+                        </option>
+
+                      </select>
+
+                    </label>
+
+
+                    <!-- PRICE -->
+
+                    <label>
+
+                      <span>
+                        Price / Unit
+                      </span>
+
+
+                      <input
+                        type="text"
+                        name="price"
+                        placeholder="e.g. 40 / kg"
+                      />
+
+                    </label>
+
+
+                    <!-- AVAILABILITY -->
+
+                    <label>
+
+                      <span>
+                        Availability
+                      </span>
+
+
+                      <input
+                        type="text"
+                        name="availability"
+                        placeholder="e.g. Daily / Seasonal"
+                      />
+
+                    </label>
+
+
+                    <!-- REMOVE -->
+
+                    <button
+                      type="button"
+                      class="remove-btn"
+                      aria-label="Remove item"
+                    >
+                      ×
+                    </button>
+
+                  </div>
+
+                </div>
+
+
+
+                <!-- =================================================
+                     EXTRA INFORMATION
+                     ================================================= -->
+
+                <div class="grid two-columns extra-fields">
+
+
+                  <!-- =================================================
+                       FARM CONDITIONS
+                       ================================================= -->
+
+                  <div class="voice-field">
+
+                    <label>
+
+                      <span>
+                        Farm Conditions
+                      </span>
+
+
+                      <textarea
+                        id="farmConditions"
+                        name="farmConditions"
+                        rows="4"
+                        placeholder="Describe soil health, irrigation, or special practices..."
+                      ></textarea>
+
+                    </label>
+
+
+                    <!-- VOICE TOOLS -->
+
+                    <div class="voice-tools">
+
+                      <select
+                        class="voice-language"
+                        data-target="farmConditions"
+                      >
+
+                        <option value="en-US">
+                          English
+                        </option>
+
+                        <option value="hi-IN">
+                          Hindi
+                        </option>
+
+                        <option value="bn-IN">
+                          Bangla
+                        </option>
+
+                        <option value="ta-IN">
+                          Tamil
+                        </option>
+
+                        <option value="te-IN">
+                          Telugu
+                        </option>
+
+                        <option value="mr-IN">
+                          Marathi
+                        </option>
+
+                        <option value="kn-IN">
+                          Kannada
+                        </option>
+
+                        <option value="ml-IN">
+                          Malayalam
+                        </option>
+
+                        <option value="gu-IN">
+                          Gujarati
+                        </option>
+
+                        <option value="es-ES">
+                          Spanish
+                        </option>
+
+                        <option value="fr-FR">
+                          French
+                        </option>
+
+                        <option value="de-DE">
+                          German
+                        </option>
+
+                      </select>
+
+
+                      <button
+                        type="button"
+                        class="mic-btn"
+                        data-target="farmConditions"
+                      >
+
+                        <img
+                          src="{{ url_for('static', filename='images/mic-icon.svg') }}"
+                          alt="Microphone"
+                          class="mic-icon"
+                        />
+
+                        Speak
+
+                      </button>
+
+                    </div>
+
+                  </div>
+
+
+
+                  <!-- =================================================
+                       NOTES
+                       ================================================= -->
+
+                  <div class="voice-field">
+
+                    <label>
+
+                      <span>
+                        Notes / Additional Requirements
+                      </span>
+
+
+                      <textarea
+                        id="notes"
+                        name="notes"
+                        rows="4"
+                        placeholder="Delivery terms, packaging, certification, or sales info..."
+                      ></textarea>
+
+                    </label>
+
+
+                    <!-- VOICE TOOLS -->
+
+                    <div class="voice-tools">
+
+                      <select
+                        class="voice-language"
+                        data-target="notes"
+                      >
+
+                        <option value="en-US">
+                          English
+                        </option>
+
+                        <option value="hi-IN">
+                          Hindi
+                        </option>
+
+                        <option value="bn-IN">
+                          Bangla
+                        </option>
+
+                        <option value="ta-IN">
+                          Tamil
+                        </option>
+
+                        <option value="te-IN">
+                          Telugu
+                        </option>
+
+                        <option value="mr-IN">
+                          Marathi
+                        </option>
+
+                        <option value="kn-IN">
+                          Kannada
+                        </option>
+
+                        <option value="ml-IN">
+                          Malayalam
+                        </option>
+
+                        <option value="gu-IN">
+                          Gujarati
+                        </option>
+
+                        <option value="es-ES">
+                          Spanish
+                        </option>
+
+                        <option value="fr-FR">
+                          French
+                        </option>
+
+                        <option value="de-DE">
+                          German
+                        </option>
+
+                      </select>
+
+
+                      <button
+                        type="button"
+                        class="mic-btn"
+                        data-target="notes"
+                      >
+
+                        <img
+                          src="{{ url_for('static', filename='images/mic-icon.svg') }}"
+                          alt="Microphone"
+                          class="mic-icon"
+                        />
+
+                        Speak
+
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+
+
+                <!-- =================================================
+                     SAVE ACTIONS
+                     ================================================= -->
+
+                <div class="actions">
+
+
+                  <!-- SAVE -->
+
+                  <button
+                    type="submit"
+                    class="primary-btn"
+                  >
+
+                    <span>
+                      Save Farm Details
+                    </span>
+
+
+                    <i>
+                      →
+                    </i>
+
+                  </button>
+
+
+                  <!-- RESET -->
+
+                  <button
+                    type="reset"
+                    class="ghost-btn"
+                  >
+                    Reset form
+                  </button>
+
+                </div>
+
+
+              </form>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 FARM SUMMARY
+                 ================================================= -->
+
+            <aside class="card preview-card">
+
+
+              <!-- SUMMARY HEADER -->
+
+              <div class="preview-top">
+
+                <div>
+
+                  <p class="section-kicker">
+                    Your snapshot
+                  </p>
+
+
+                  <h2>
+                    Farm Summary
+                  </h2>
+
+                </div>
+
+
+                <span class="live-dot">
+                  ● Live
+                </span>
+
               </div>
 
-              <div class="voice-field">
-                <label
-                  ><span>Notes / Additional Requirements</span
-                  ><textarea
-                    id="notes"
-                    name="notes"
-                    rows="4"
-                    placeholder="Delivery terms, packaging, certification, or sales info..."></textarea>
-                </label>
-                <div class="voice-tools">
-                  <select class="voice-language" data-target="notes">
-                    <option value="en-US">English</option>
-                    <option value="hi-IN">Hindi</option>
-                    <option value="bn-IN">Bangla</option>
-                    <option value="ta-IN">Tamil</option>
-                    <option value="te-IN">Telugu</option>
-                    <option value="mr-IN">Marathi</option>
-                    <option value="kn-IN">Kannada</option>
-                    <option value="ml-IN">Malayalam</option>
-                    <option value="gu-IN">Gujarati</option>
-                    <option value="es-ES">Spanish</option>
-                    <option value="fr-FR">French</option>
-                    <option value="de-DE">German</option>
-                  </select>
-                  <button type="button" class="mic-btn" data-target="notes">
-                    <img src="{{ url_for('static', filename='images/mic-icon.svg') }}" alt="Microphone" class="mic-icon"> Speak
-                  </button>
+
+
+              <!-- SUMMARY CONTENT -->
+
+              <div
+                id="summaryBox"
+                class="summary-box"
+              >
+
+                <div class="empty-state">
+
+                  <div class="empty-icon">
+                    ✦
+                  </div>
+
+
+                  <h3>
+                    Your story starts here
+                  </h3>
+
+
+                  <p>
+                    Fill in a few details and your buyer-ready
+                    farm summary will appear live.
+                  </p>
+
+
+                  <div class="empty-line"></div>
+
+                  <div class="empty-line short"></div>
+
                 </div>
+
               </div>
-            </div>
 
-            <div class="actions">
-              <button type="submit" class="primary-btn">
-                <span>Save Farm Details</span><i>→</i></button
-              ><button type="reset" class="ghost-btn">Reset form</button>
-            </div>
-          </form>
-        </section>
 
-        <aside class="card preview-card">
-          <div class="preview-top">
-            <div>
-              <p class="section-kicker">Your snapshot</p>
-              <h2>Farm Summary</h2>
-            </div>
-            <span class="live-dot">● Live</span>
-          </div>
-          <div id="summaryBox" class="summary-box">
-            <div class="empty-state">
-              <div class="empty-icon">✦</div>
-              <h3>Your story starts here</h3>
-              <p>
-                Fill in a few details and your buyer-ready farm summary will
-                appear live.
-              </p>
-              <div class="empty-line"></div>
-              <div class="empty-line short"></div>
-            </div>
-          </div>
-          <div class="preview-footer">
-            <span>Last updated</span
-            ><strong id="lastUpdated">Not saved yet</strong>
-          </div>
-        </aside>
-      </section>
-</div>
+
+              <!-- LAST UPDATED -->
+
+              <div class="preview-footer">
+
+                <span>
+                  Last updated
+                </span>
+
+
+                <strong id="lastUpdated">
+                  Not saved yet
+                </strong>
+
+              </div>
+
+            </aside>
+
+
+          </section>
+
+
+        </div>
 
       </main>
+
     </div>
 
-    <div class="toast" id="toast" role="status" aria-live="polite">
-      <span>✓</span>
-      <p>Farm details saved successfully</p>
+
+
+    <!-- =====================================================
+         TOAST
+         ===================================================== -->
+
+    <div
+      class="toast"
+      id="toast"
+      role="status"
+      aria-live="polite"
+    >
+
+      <span>
+        ✓
+      </span>
+
+
+      <p>
+        Farm details saved successfully
+      </p>
+
     </div>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT DATA
+         ===================================================== -->
 
     <script>
       window.farmerData = {{ farmer_data | tojson }};
       window.initialFarmDetails = {{ farm_details | tojson }};
     </script>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+
+
+    <!-- =====================================================
+         MAIN FARMER DETAILS JAVASCRIPT
+         ===================================================== -->
+
+    <script
+      src="{{ url_for('static', filename='script.js') }}"
+    ></script>
+
   </body>
 </html>

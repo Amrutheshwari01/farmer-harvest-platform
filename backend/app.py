@@ -25,11 +25,17 @@ import json
 # ============================================================
 
 # Disable Flask's automatic /static route.
-# We create our own route below because this project has:
 #
-# static/                 -> Farmer Details / Harvest integration
-# backend/static/         -> Login / Dashboard styling
+# This project has two static folders:
 #
+# static/
+#     -> Farmer Details / Harvest integration
+#
+# backend/static/
+#     -> Login / Dashboard styling
+#
+# Therefore, a custom /static route is defined below.
+
 app = Flask(__name__, static_folder=None)
 
 # Secret key for sessions and flash messages
@@ -51,9 +57,9 @@ app.secret_key = os.environ.get(
 # │   └── farmers.db
 # │
 # ├── static/
-# │   ├── index.html
 # │   ├── styles.css
 # │   ├── script.js
+# │   ├── app-shell.css
 # │   └── images/
 # │       └── mic-icon.svg
 # │
@@ -64,7 +70,8 @@ app.secret_key = os.environ.get(
 #     └── templates/
 #         ├── login.html
 #         ├── signup.html
-#         └── dashboard.html
+#         ├── dashboard.html
+#         └── farmer_details.html
 
 
 PROJECT_ROOT = os.path.dirname(
@@ -103,12 +110,17 @@ BACKEND_STATIC_DIR = os.path.join(
 def init_db():
 
     # Create data directory if it does not exist
-    os.makedirs(DB_DIR, exist_ok=True)
+    os.makedirs(
+        DB_DIR,
+        exist_ok=True
+    )
 
     conn = sqlite3.connect(DB_PATH)
 
     # Enable foreign keys
-    conn.execute("PRAGMA foreign_keys = ON")
+    conn.execute(
+        "PRAGMA foreign_keys = ON"
+    )
 
     cursor = conn.cursor()
 
@@ -130,6 +142,14 @@ def init_db():
     # --------------------------------------------------------
     # HARVESTS TABLE
     # --------------------------------------------------------
+
+    # Kept for compatibility with the existing database and
+    # harvest functionality.
+    #
+    # The dashboard Add Harvest button now takes the user to
+    # the Available Vegetables & Produce section on the
+    # Farmer Details page instead of opening a separate
+    
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS harvests (
@@ -176,7 +196,9 @@ def init_db():
     conn.commit()
     conn.close()
 
-    print(f"Database initialized at: {DB_PATH}")
+    print(
+        f"Database initialized at: {DB_PATH}"
+    )
 
 
 # Initialize database when application starts
@@ -191,23 +213,44 @@ init_db()
 def home():
 
     # Send user to signup page
-    return redirect(url_for("signup"))
+    return redirect(
+        url_for("signup")
+    )
 
 
 # ============================================================
 # FARMER SIGNUP
 # ============================================================
 
-@app.route("/signup", methods=["GET", "POST"])
+@app.route(
+    "/signup",
+    methods=["GET", "POST"]
+)
 def signup():
 
     if request.method == "POST":
 
         # Get form data
-        name = request.form.get("name", "").strip()
-        phone = request.form.get("phone", "").strip()
-        email = request.form.get("email", "").strip().lower()
-        password = request.form.get("password", "")
+        name = request.form.get(
+            "name",
+            ""
+        ).strip()
+
+        phone = request.form.get(
+            "phone",
+            ""
+        ).strip()
+
+        email = request.form.get(
+            "email",
+            ""
+        ).strip().lower()
+
+        password = request.form.get(
+            "password",
+            ""
+        )
+
         confirm_password = request.form.get(
             "confirm_password",
             ""
@@ -217,27 +260,51 @@ def signup():
         # VALIDATION
         # ----------------------------------------------------
 
-        if not name or not phone or not email or not password:
-            flash("Please fill in all required fields.")
-            return redirect(url_for("signup"))
+        if (
+            not name
+            or not phone
+            or not email
+            or not password
+        ):
+
+            flash(
+                "Please fill in all required fields."
+            )
+
+            return redirect(
+                url_for("signup")
+            )
 
         # Check password confirmation
         if password != confirm_password:
-            flash("Passwords do not match.")
-            return redirect(url_for("signup"))
+
+            flash(
+                "Passwords do not match."
+            )
+
+            return redirect(
+                url_for("signup")
+            )
 
         # Check password length
         if len(password) < 6:
+
             flash(
                 "Password must contain at least 6 characters."
             )
-            return redirect(url_for("signup"))
+
+            return redirect(
+                url_for("signup")
+            )
 
         # ----------------------------------------------------
         # DATABASE CONNECTION
         # ----------------------------------------------------
 
-        conn = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect(
+            DB_PATH
+        )
+
         cursor = conn.cursor()
 
         # Check whether email already exists
@@ -260,7 +327,9 @@ def signup():
                 "An account with this email already exists."
             )
 
-            return redirect(url_for("signup"))
+            return redirect(
+                url_for("signup")
+            )
 
         # ----------------------------------------------------
         # HASH PASSWORD
@@ -300,16 +369,23 @@ def signup():
             "Account created successfully. Please login."
         )
 
-        return redirect(url_for("login"))
+        return redirect(
+            url_for("login")
+        )
 
-    return render_template("signup.html")
+    return render_template(
+        "signup.html"
+    )
 
 
 # ============================================================
 # FARMER LOGIN
 # ============================================================
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route(
+    "/login",
+    methods=["GET", "POST"]
+)
 def login():
 
     if request.method == "POST":
@@ -332,13 +408,18 @@ def login():
                 "Please enter your email and password."
             )
 
-            return redirect(url_for("login"))
+            return redirect(
+                url_for("login")
+            )
 
         # ----------------------------------------------------
         # FIND FARMER
         # ----------------------------------------------------
 
-        conn = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect(
+            DB_PATH
+        )
+
         conn.row_factory = sqlite3.Row
 
         cursor = conn.cursor()
@@ -371,7 +452,9 @@ def login():
             session["farmer_email"] = farmer["email"]
             session["farmer_phone"] = farmer["phone"]
 
-            flash("Login successful!")
+            flash(
+                "Login successful!"
+            )
 
             return redirect(
                 url_for("dashboard")
@@ -386,7 +469,9 @@ def login():
             url_for("login")
         )
 
-    return render_template("login.html")
+    return render_template(
+        "login.html"
+    )
 
 
 # ============================================================
@@ -407,10 +492,21 @@ def dashboard():
             url_for("login")
         )
 
-    # Get additional farmer information
-    conn = sqlite3.connect(DB_PATH)
+    # --------------------------------------------------------
+    # DATABASE CONNECTION
+    # --------------------------------------------------------
+
+    conn = sqlite3.connect(
+        DB_PATH
+    )
+
     conn.row_factory = sqlite3.Row
+
     cursor = conn.cursor()
+
+    # --------------------------------------------------------
+    # GET FARMER INFORMATION
+    # --------------------------------------------------------
 
     cursor.execute(
         """
@@ -423,7 +519,10 @@ def dashboard():
 
     farmer = cursor.fetchone()
 
-    # Get farm details
+    # --------------------------------------------------------
+    # GET FARM DETAILS
+    # --------------------------------------------------------
+
     cursor.execute(
         """
         SELECT *
@@ -439,41 +538,89 @@ def dashboard():
 
     conn.close()
 
+    # --------------------------------------------------------
+    # PREPARE FARM DETAILS FOR TEMPLATE
+    # --------------------------------------------------------
+
     farm_details_data = None
 
     if farm_details:
 
-        farm_details_data = {
-            "farmName": farm_details["farm_name"],
-            "location": farm_details["location"],
-            "landSize": farm_details["land_size"],
-            "farmType": farm_details["farm_type"],
-            "farmConditions": farm_details["farm_conditions"],
-            "notes": farm_details["notes"],
-            "crops": (
-                json.loads(farm_details["items"])
+        try:
+
+            crops = (
+                json.loads(
+                    farm_details["items"]
+                )
                 if farm_details["items"]
                 else []
+            )
+
+        except (
+            json.JSONDecodeError,
+            TypeError
+        ):
+
+            crops = []
+
+        farm_details_data = {
+            "farmName": (
+                farm_details["farm_name"]
+                or ""
             ),
+            "location": (
+                farm_details["location"]
+                or ""
+            ),
+            "landSize": (
+                farm_details["land_size"]
+                or ""
+            ),
+            "farmType": (
+                farm_details["farm_type"]
+                or ""
+            ),
+            "farmConditions": (
+                farm_details["farm_conditions"]
+                or ""
+            ),
+            "notes": (
+                farm_details["notes"]
+                or ""
+            ),
+            "crops": crops,
             "updated_at": farm_details["updated_at"]
         }
+
+    # --------------------------------------------------------
+    # RENDER DASHBOARD
+    # --------------------------------------------------------
 
     return render_template(
         "dashboard.html",
         farmer_name=(
             farmer["name"]
             if farmer
-            else session.get("farmer_name", "")
+            else session.get(
+                "farmer_name",
+                ""
+            )
         ),
         farmer_email=(
             farmer["email"]
             if farmer
-            else session.get("farmer_email", "")
+            else session.get(
+                "farmer_email",
+                ""
+            )
         ),
         farmer_phone=(
             farmer["phone"]
             if farmer
-            else session.get("farmer_phone", "")
+            else session.get(
+                "farmer_phone",
+                ""
+            )
         ),
         farm_details=farm_details_data
     )
@@ -503,13 +650,36 @@ def logout():
 
 @app.route("/farmer-details")
 def farmer_details():
-    if "farmer_id" not in session:
-        flash("Please login to access your farmer details.")
-        return redirect(url_for("login"))
 
-    conn = sqlite3.connect(DB_PATH)
+    # --------------------------------------------------------
+    # LOGIN CHECK
+    # --------------------------------------------------------
+
+    if "farmer_id" not in session:
+
+        flash(
+            "Please login to access your farmer details."
+        )
+
+        return redirect(
+            url_for("login")
+        )
+
+    # --------------------------------------------------------
+    # DATABASE CONNECTION
+    # --------------------------------------------------------
+
+    conn = sqlite3.connect(
+        DB_PATH
+    )
+
     conn.row_factory = sqlite3.Row
+
     cursor = conn.cursor()
+
+    # --------------------------------------------------------
+    # GET FARMER INFORMATION
+    # --------------------------------------------------------
 
     cursor.execute(
         """
@@ -517,9 +687,14 @@ def farmer_details():
         FROM farmers
         WHERE id = ?
         """,
-        (session["farmer_id"],),
+        (session["farmer_id"],)
     )
+
     farmer = cursor.fetchone()
+
+    # --------------------------------------------------------
+    # GET SAVED FARM DETAILS
+    # --------------------------------------------------------
 
     cursor.execute(
         """
@@ -529,29 +704,92 @@ def farmer_details():
         ORDER BY updated_at DESC
         LIMIT 1
         """,
-        (session["farmer_id"],),
+        (session["farmer_id"],)
     )
+
     saved_details = cursor.fetchone()
+
     conn.close()
 
+    # --------------------------------------------------------
+    # FARMER DATA
+    # --------------------------------------------------------
+
     farmer_data = {
-        "name": farmer["name"] if farmer else "",
-        "phone": farmer["phone"] if farmer else "",
-        "email": farmer["email"] if farmer else "",
+        "name": (
+            farmer["name"]
+            if farmer
+            else ""
+        ),
+        "phone": (
+            farmer["phone"]
+            if farmer
+            else ""
+        ),
+        "email": (
+            farmer["email"]
+            if farmer
+            else ""
+        ),
     }
 
+    # --------------------------------------------------------
+    # FARM DETAILS DATA
+    # --------------------------------------------------------
+
     farm_details = None
+
     if saved_details:
+
+        try:
+
+            items = (
+                json.loads(
+                    saved_details["items"]
+                )
+                if saved_details["items"]
+                else []
+            )
+
+        except (
+            json.JSONDecodeError,
+            TypeError
+        ):
+
+            items = []
+
         farm_details = {
-            "farmName": saved_details["farm_name"] or "",
-            "location": saved_details["location"] or "",
-            "landSize": saved_details["land_size"] or "",
-            "farmType": saved_details["farm_type"] or "",
-            "farmConditions": saved_details["farm_conditions"] or "",
-            "notes": saved_details["notes"] or "",
-            "items": json.loads(saved_details["items"]) if saved_details["items"] else [],
+            "farmName": (
+                saved_details["farm_name"]
+                or ""
+            ),
+            "location": (
+                saved_details["location"]
+                or ""
+            ),
+            "landSize": (
+                saved_details["land_size"]
+                or ""
+            ),
+            "farmType": (
+                saved_details["farm_type"]
+                or ""
+            ),
+            "farmConditions": (
+                saved_details["farm_conditions"]
+                or ""
+            ),
+            "notes": (
+                saved_details["notes"]
+                or ""
+            ),
+            "items": items,
             "updated_at": saved_details["updated_at"],
         }
+
+    # --------------------------------------------------------
+    # RENDER FARMER DETAILS
+    # --------------------------------------------------------
 
     return render_template(
         "farmer_details.html",
@@ -560,62 +798,96 @@ def farmer_details():
         farm_details=farm_details,
     )
 
+
 # ============================================================
 # STATIC FILE SERVING
 # ============================================================
 
-@app.route("/static/<path:filename>", endpoint="static")
+@app.route(
+    "/static/<path:filename>",
+    endpoint="static"
+)
 def serve_static(filename):
 
-    # IMPORTANT:
-    # Both project/static/ and backend/static/ contain CSS/JS files.
-    # The dashboard uses /static/style.css, so backend/static MUST be
-    # checked first. Farmer Details uses /static/styles.css and /static/script.js,
-    # which will fall through to project/static/.
+    # Both project/static/ and backend/static/ contain
+    # frontend assets.
+    #
+    # backend/static/
+    #     -> Dashboard/login styling
+    #
+    # static/
+    #     -> Farmer Details styling/scripts
+    #
+    # backend/static MUST be checked first because the
+    # dashboard requests /static/style.css.
 
     # --------------------------------------------------------
-    # FIRST: DASHBOARD STATIC FILES
+    # FIRST: BACKEND STATIC FILES
     # --------------------------------------------------------
+
     backend_file = os.path.join(
         BACKEND_STATIC_DIR,
         filename
     )
 
-    if os.path.isfile(backend_file):
+    if os.path.isfile(
+        backend_file
+    ):
+
         return send_from_directory(
             BACKEND_STATIC_DIR,
             filename
         )
 
     # --------------------------------------------------------
-    # SECOND: FARMER DETAILS / HARVEST STATIC FILES
+    # SECOND: ROOT STATIC FILES
     # --------------------------------------------------------
+
     root_file = os.path.join(
         ROOT_STATIC_DIR,
         filename
     )
 
-    if os.path.isfile(root_file):
+    if os.path.isfile(
+        root_file
+    ):
+
         return send_from_directory(
             ROOT_STATIC_DIR,
             filename
         )
 
-    return "Static file not found.", 404
+    # --------------------------------------------------------
+    # FILE NOT FOUND
+    # --------------------------------------------------------
+
+    return (
+        "Static file not found.",
+        404
+    )
 
 
 # ============================================================
-# FARM DETAILS API
+# FARM DETAILS API - SAVE
 # ============================================================
 
-@app.route("/api/farm-details", methods=["POST"])
+@app.route(
+    "/api/farm-details",
+    methods=["POST"]
+)
 def save_farm_details():
+
+    # --------------------------------------------------------
+    # LOGIN CHECK
+    # --------------------------------------------------------
 
     if "farmer_id" not in session:
 
         return jsonify({
             "success": False,
-            "message": "Please login to save farm details"
+            "message": (
+                "Please login to save farm details"
+            )
         }), 401
 
     try:
@@ -623,15 +895,28 @@ def save_farm_details():
         data = request.get_json()
 
         if not data:
+
             return jsonify({
                 "success": False,
-                "message": "No farm details received"
+                "message": (
+                    "No farm details received"
+                )
             }), 400
 
-        conn = sqlite3.connect(DB_PATH)
+        # ----------------------------------------------------
+        # DATABASE CONNECTION
+        # ----------------------------------------------------
+
+        conn = sqlite3.connect(
+            DB_PATH
+        )
+
         cursor = conn.cursor()
 
-        # Check if farmer already has farm details
+        # ----------------------------------------------------
+        # CHECK EXISTING FARM DETAILS
+        # ----------------------------------------------------
+
         cursor.execute(
             """
             SELECT id
@@ -643,13 +928,20 @@ def save_farm_details():
 
         existing = cursor.fetchone()
 
+        # Convert produce items to JSON
         items_json = json.dumps(
-            data.get("items", [])
+            data.get(
+                "items",
+                []
+            )
         )
+
+        # ----------------------------------------------------
+        # UPDATE EXISTING RECORD
+        # ----------------------------------------------------
 
         if existing:
 
-            # Update existing record
             cursor.execute(
                 """
                 UPDATE farm_details
@@ -665,20 +957,41 @@ def save_farm_details():
                 WHERE farmer_id = ?
                 """,
                 (
-                    data.get("farmName", ""),
-                    data.get("location", ""),
-                    data.get("landSize", ""),
-                    data.get("farmType", ""),
-                    data.get("farmConditions", ""),
-                    data.get("notes", ""),
+                    data.get(
+                        "farmName",
+                        ""
+                    ),
+                    data.get(
+                        "location",
+                        ""
+                    ),
+                    data.get(
+                        "landSize",
+                        ""
+                    ),
+                    data.get(
+                        "farmType",
+                        ""
+                    ),
+                    data.get(
+                        "farmConditions",
+                        ""
+                    ),
+                    data.get(
+                        "notes",
+                        ""
+                    ),
                     items_json,
                     session["farmer_id"]
                 )
             )
 
+        # ----------------------------------------------------
+        # INSERT NEW RECORD
+        # ----------------------------------------------------
+
         else:
 
-            # Insert new record
             cursor.execute(
                 """
                 INSERT INTO farm_details
@@ -696,12 +1009,30 @@ def save_farm_details():
                 """,
                 (
                     session["farmer_id"],
-                    data.get("farmName", ""),
-                    data.get("location", ""),
-                    data.get("landSize", ""),
-                    data.get("farmType", ""),
-                    data.get("farmConditions", ""),
-                    data.get("notes", ""),
+                    data.get(
+                        "farmName",
+                        ""
+                    ),
+                    data.get(
+                        "location",
+                        ""
+                    ),
+                    data.get(
+                        "landSize",
+                        ""
+                    ),
+                    data.get(
+                        "farmType",
+                        ""
+                    ),
+                    data.get(
+                        "farmConditions",
+                        ""
+                    ),
+                    data.get(
+                        "notes",
+                        ""
+                    ),
                     items_json
                 )
             )
@@ -711,14 +1042,18 @@ def save_farm_details():
 
         return jsonify({
             "success": True,
-            "message": "Farm details saved successfully"
+            "message": (
+                "Farm details saved successfully"
+            )
         })
 
     except Exception as e:
 
         return jsonify({
             "success": False,
-            "message": f"Error saving farm details: {str(e)}"
+            "message": (
+                f"Error saving farm details: {str(e)}"
+            )
         }), 500
 
 
@@ -726,22 +1061,42 @@ def save_farm_details():
 # GET FARM DETAILS API
 # ============================================================
 
-@app.route("/api/farm-details", methods=["GET"])
+@app.route(
+    "/api/farm-details",
+    methods=["GET"]
+)
 def get_farm_details():
+
+    # --------------------------------------------------------
+    # LOGIN CHECK
+    # --------------------------------------------------------
 
     if "farmer_id" not in session:
 
         return jsonify({
             "success": False,
-            "message": "Please login to view farm details"
+            "message": (
+                "Please login to view farm details"
+            )
         }), 401
 
     try:
 
-        conn = sqlite3.connect(DB_PATH)
+        # ----------------------------------------------------
+        # DATABASE CONNECTION
+        # ----------------------------------------------------
+
+        conn = sqlite3.connect(
+            DB_PATH
+        )
+
         conn.row_factory = sqlite3.Row
 
         cursor = conn.cursor()
+
+        # ----------------------------------------------------
+        # GET FARM DETAILS
+        # ----------------------------------------------------
 
         cursor.execute(
             """
@@ -758,40 +1113,73 @@ def get_farm_details():
 
         conn.close()
 
+        # ----------------------------------------------------
+        # FARM DETAILS FOUND
+        # ----------------------------------------------------
+
         if farm_details:
 
-            crops = (
-                json.loads(farm_details["items"])
-                if farm_details["items"]
-                else []
-            )
+            try:
+
+                crops = (
+                    json.loads(
+                        farm_details["items"]
+                    )
+                    if farm_details["items"]
+                    else []
+                )
+
+            except (
+                json.JSONDecodeError,
+                TypeError
+            ):
+
+                crops = []
 
             return jsonify({
                 "success": True,
                 "data": {
-                    "farmName": farm_details["farm_name"],
-                    "location": farm_details["location"],
-                    "landSize": farm_details["land_size"],
-                    "farmType": farm_details["farm_type"],
-                    "farmConditions": farm_details["farm_conditions"],
-                    "notes": farm_details["notes"],
+                    "farmName": (
+                        farm_details["farm_name"]
+                    ),
+                    "location": (
+                        farm_details["location"]
+                    ),
+                    "landSize": (
+                        farm_details["land_size"]
+                    ),
+                    "farmType": (
+                        farm_details["farm_type"]
+                    ),
+                    "farmConditions": (
+                        farm_details["farm_conditions"]
+                    ),
+                    "notes": (
+                        farm_details["notes"]
+                    ),
                     "crops": crops,
-                    "updated_at": farm_details["updated_at"]
+                    "updated_at": (
+                        farm_details["updated_at"]
+                    )
                 }
             })
 
-        else:
+        # ----------------------------------------------------
+        # NO FARM DETAILS
+        # ----------------------------------------------------
 
-            return jsonify({
-                "success": True,
-                "data": None
-            })
+        return jsonify({
+            "success": True,
+            "data": None
+        })
 
     except Exception as e:
 
         return jsonify({
             "success": False,
-            "message": f"Error fetching farm details: {str(e)}"
+            "message": (
+                f"Error fetching farm details: {str(e)}"
+            )
         }), 500
 
 

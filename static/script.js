@@ -8,32 +8,110 @@ const saveStatus = document.querySelector("#saveStatus");
 const lastUpdated = document.querySelector("#lastUpdated");
 const toast = document.querySelector("#toast");
 const themeToggle = document.querySelector("#themeToggle");
+
 const storageKey = "farm-deal-details-v1";
+
 const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 
-// Farmer data from backend
+
+// ============================================================
+// BACKEND DATA
+// ============================================================
+
 let farmerData = window.farmerData || {
   name: "",
   phone: "",
   email: ""
 };
-const initialFarmDetails = window.initialFarmDetails || null;
 
-// Display farmer information
+/*
+ * IMPORTANT
+ *
+ * initialFarmDetails comes from Flask/SQLite.
+ *
+ * Example:
+ *
+ * {
+ *   farmName: "Himan Farm",
+ *   location: "Near C Block",
+ *   landSize: "7 acres",
+ *   farmType: "Vegetable Farm",
+ *   farmConditions: "Good soil",
+ *   notes: "",
+ *   items: [
+ *     {
+ *       cropName: "LadyFinger",
+ *       quantity: "40kg",
+ *       quality: "Good",
+ *       price: "30/kg",
+ *       availability: "Daily"
+ *     }
+ *   ],
+ *   updated_at: "2026-09-25 06:45:47"
+ * }
+ */
+
+const initialFarmDetails =
+  window.initialFarmDetails || null;
+
+
+// ============================================================
+// DISPLAY FARMER INFORMATION
+// ============================================================
+
 function displayFarmerInfo() {
-  const farmerInfoDisplay = document.getElementById("farmerInfoDisplay");
-  const displayFarmerName = document.getElementById("displayFarmerName");
-  const displayPhone = document.getElementById("displayPhone");
-  const displayEmail = document.getElementById("displayEmail");
 
-  if (farmerData.name || farmerData.phone || farmerData.email) {
+  const farmerInfoDisplay =
+    document.getElementById("farmerInfoDisplay");
+
+  const displayFarmerName =
+    document.getElementById("displayFarmerName");
+
+  const displayPhone =
+    document.getElementById("displayPhone");
+
+  const displayEmail =
+    document.getElementById("displayEmail");
+
+
+  if (!farmerInfoDisplay) {
+    return;
+  }
+
+
+  if (
+    farmerData.name ||
+    farmerData.phone ||
+    farmerData.email
+  ) {
+
     farmerInfoDisplay.style.display = "block";
-    displayFarmerName.textContent = farmerData.name || "Not provided";
-    displayPhone.textContent = farmerData.phone || "Not provided";
-    displayEmail.textContent = farmerData.email || "Not provided";
+
+
+    if (displayFarmerName) {
+      displayFarmerName.textContent =
+        farmerData.name || "Not provided";
+    }
+
+
+    if (displayPhone) {
+      displayPhone.textContent =
+        farmerData.phone || "Not provided";
+    }
+
+
+    if (displayEmail) {
+      displayEmail.textContent =
+        farmerData.email || "Not provided";
+    }
   }
 }
+
+
+// ============================================================
+// SECURITY
+// ============================================================
 
 const escapeHTML = (value = "") =>
   String(value).replace(
@@ -47,395 +125,1690 @@ const escapeHTML = (value = "") =>
         '"': "&quot;",
       })[char],
   );
-const valueOf = (name, root = form) =>
-  root.querySelector(`[name="${name}"]`)?.value.trim() || "";
+
+
+// ============================================================
+// GET FORM VALUE
+// ============================================================
+
+const valueOf = (name, root = form) => {
+
+  if (!root) {
+    return "";
+  }
+
+  return (
+    root
+      .querySelector(`[name="${name}"]`)
+      ?.value
+      .trim() || ""
+  );
+};
+
+
+// ============================================================
+// VOICE INPUT
+// ============================================================
 
 function appendVoiceText(targetId, transcript) {
-  const field = document.getElementById(targetId);
-  if (!field) return;
-  const sentence = transcript.trim();
-  if (!sentence) return;
 
-  // Check if the transcript is very similar to the last added text to avoid duplicates
-  const currentValue = field.value.trim();
+  const field =
+    document.getElementById(targetId);
+
+  if (!field) {
+    return;
+  }
+
+
+  const sentence =
+    transcript.trim();
+
+  if (!sentence) {
+    return;
+  }
+
+
+  const currentValue =
+    field.value.trim();
+
+
   if (currentValue.length > 10) {
-    const lastWords = currentValue.split(' ').slice(-3).join(' ').toLowerCase();
-    const newWords = sentence.split(' ').slice(0, 3).join(' ').toLowerCase();
+
+    const lastWords =
+      currentValue
+        .split(" ")
+        .slice(-3)
+        .join(" ")
+        .toLowerCase();
+
+    const newWords =
+      sentence
+        .split(" ")
+        .slice(0, 3)
+        .join(" ")
+        .toLowerCase();
+
+
     if (lastWords === newWords) {
-      return; // Skip if it looks like a duplicate
+      return;
     }
   }
 
-  const nextValue = currentValue
-    ? `${currentValue} ${sentence}`
-    : sentence;
+
+  const nextValue =
+    currentValue
+      ? `${currentValue} ${sentence}`
+      : sentence;
+
+
   field.value = nextValue;
-  field.dispatchEvent(new Event("input", { bubbles: true }));
+
+
+  field.dispatchEvent(
+    new Event("input", {
+      bubbles: true
+    })
+  );
 }
 
-function setMicState(button, text, isListening = false) {
-  // Find the mic icon img and span text
-  const micIcon = button.querySelector('.mic-icon');
-  const textSpan = button.lastChild;
+
+// ============================================================
+// MICROPHONE BUTTON STATE
+// ============================================================
+
+function setMicState(
+  button,
+  text,
+  isListening = false
+) {
+
+  if (!button) {
+    return;
+  }
+
+
+  const textSpan =
+    button.lastChild;
+
 
   if (textSpan) {
-    textSpan.textContent = ` ${text}`;
+    textSpan.textContent =
+      ` ${text}`;
   }
-  button.classList.toggle("listening", isListening);
+
+
+  button.classList.toggle(
+    "listening",
+    isListening
+  );
+
+
   button.title = text;
 }
 
-const recognitionState = { active: null };
+
+// ============================================================
+// SPEECH RECOGNITION
+// ============================================================
+
+const recognitionState = {
+  active: null
+};
+
 
 async function startVoiceInput(targetId) {
-  const field = document.getElementById(targetId);
-  const micButton = document.querySelector(
-    `.mic-btn[data-target="${targetId}"]`,
-  );
-  const languageSelect = document.querySelector(
-    `.voice-language[data-target="${targetId}"]`,
-  );
 
-  if (!field || !micButton || !languageSelect) return;
+  const field =
+    document.getElementById(targetId);
+
+
+  const micButton =
+    document.querySelector(
+      `.mic-btn[data-target="${targetId}"]`
+    );
+
+
+  const languageSelect =
+    document.querySelector(
+      `.voice-language[data-target="${targetId}"]`
+    );
+
+
+  if (
+    !field ||
+    !micButton ||
+    !languageSelect
+  ) {
+    return;
+  }
+
 
   if (
     recognitionState.active &&
     recognitionState.active.targetId === targetId
   ) {
+
     recognitionState.active.recognition.stop();
+
     recognitionState.active = null;
-    setMicState(micButton, "Speak", false);
+
+    setMicState(
+      micButton,
+      "Speak",
+      false
+    );
+
     return;
   }
 
+
   if (!SpeechRecognition) {
-    setMicState(micButton, "Use Chrome/Edge", false);
+
+    setMicState(
+      micButton,
+      "Use Chrome/Edge",
+      false
+    );
+
     return;
   }
+
 
   if (
     window.location.protocol === "file:" &&
     !window.location.hostname.includes("localhost")
   ) {
-    setMicState(micButton, "Use localhost", false);
+
+    setMicState(
+      micButton,
+      "Use localhost",
+      false
+    );
+
     return;
   }
 
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    setMicState(micButton, "Mic blocked", false);
+
+  if (
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices.getUserMedia
+  ) {
+
+    setMicState(
+      micButton,
+      "Mic blocked",
+      false
+    );
+
     return;
   }
+
 
   try {
-    await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    await navigator.mediaDevices.getUserMedia({
+      audio: true
+    });
+
   } catch (error) {
-    setMicState(micButton, "Permission denied", false);
+
+    setMicState(
+      micButton,
+      "Permission denied",
+      false
+    );
+
     return;
   }
 
-  const recognition = new SpeechRecognition();
-  recognition.lang = languageSelect.value;
-  recognition.interimResults = true; // Changed to true for better responsiveness
-  recognition.continuous = false; // Changed to false to prevent overlapping
-  recognition.maxAlternatives = 1;
 
-  recognitionState.active = { targetId, recognition };
-  setMicState(micButton, "🎙 Listening…", true);
+  const recognition =
+    new SpeechRecognition();
+
+
+  recognition.lang =
+    languageSelect.value;
+
+
+  recognition.interimResults =
+    true;
+
+
+  recognition.continuous =
+    false;
+
+
+  recognition.maxAlternatives =
+    1;
+
+
+  recognitionState.active = {
+    targetId,
+    recognition
+  };
+
+
+  setMicState(
+    micButton,
+    "🎙 Listening…",
+    true
+  );
+
 
   let lastTranscript = "";
 
-  recognition.onresult = (event) => {
-    const result = event.results[event.results.length - 1];
-    const transcript = result[0].transcript;
 
-    // Only append if it's a final result and different from the last one
-    if (result.isFinal && transcript !== lastTranscript) {
-      lastTranscript = transcript;
-      appendVoiceText(targetId, transcript);
-    }
-  };
+  recognition.onresult =
+    (event) => {
 
-  recognition.onerror = (event) => {
-    console.error("Speech recognition error:", event.error);
+      const result =
+        event.results[
+          event.results.length - 1
+        ];
 
-    if (
-      event.error === "not-allowed" ||
-      event.error === "service-not-allowed"
-    ) {
-      setMicState(micButton, "Permission denied", false);
-    } else if (event.error === "no-speech") {
-      // Don't restart on no-speech, just stop
-      setMicState(micButton, "Speak", false);
-    } else if (event.error === "network") {
-      setMicState(micButton, "Network error", false);
-    } else {
-      setMicState(micButton, "Try again", false);
-    }
 
-    if (
-      recognitionState.active &&
-      recognitionState.active.targetId === targetId
-    ) {
-      recognitionState.active = null;
-    }
-  };
+      const transcript =
+        result[0].transcript;
 
-  recognition.onend = () => {
-    if (
-      recognitionState.active &&
-      recognitionState.active.targetId === targetId
-    ) {
-      recognitionState.active = null;
-    }
-    setMicState(micButton, "Speak", false);
-    lastTranscript = ""; // Reset the last transcript
-  };
+
+      if (
+        result.isFinal &&
+        transcript !== lastTranscript
+      ) {
+
+        lastTranscript =
+          transcript;
+
+
+        appendVoiceText(
+          targetId,
+          transcript
+        );
+      }
+    };
+
+
+  recognition.onerror =
+    (event) => {
+
+      console.error(
+        "Speech recognition error:",
+        event.error
+      );
+
+
+      if (
+        event.error === "not-allowed" ||
+        event.error === "service-not-allowed"
+      ) {
+
+        setMicState(
+          micButton,
+          "Permission denied",
+          false
+        );
+
+      } else if (
+        event.error === "no-speech"
+      ) {
+
+        setMicState(
+          micButton,
+          "Speak",
+          false
+        );
+
+      } else if (
+        event.error === "network"
+      ) {
+
+        setMicState(
+          micButton,
+          "Network error",
+          false
+        );
+
+      } else {
+
+        setMicState(
+          micButton,
+          "Try again",
+          false
+        );
+      }
+
+
+      if (
+        recognitionState.active &&
+        recognitionState.active.targetId === targetId
+      ) {
+
+        recognitionState.active = null;
+      }
+    };
+
+
+  recognition.onend =
+    () => {
+
+      if (
+        recognitionState.active &&
+        recognitionState.active.targetId === targetId
+      ) {
+
+        recognitionState.active = null;
+      }
+
+
+      setMicState(
+        micButton,
+        "Speak",
+        false
+      );
+
+
+      lastTranscript = "";
+    };
+
 
   try {
+
     recognition.start();
+
   } catch (error) {
+
     recognitionState.active = null;
-    setMicState(micButton, "Mic busy", false);
+
+    setMicState(
+      micButton,
+      "Mic busy",
+      false
+    );
   }
 }
 
+
+// ============================================================
+// PRODUCE ITEM TEMPLATE
+// ============================================================
+
 function itemTemplate(item = {}) {
-  return `<div class="produce-row">
-    <div class="row-number"></div>
-    <label><span>Vegetable / Crop</span><input type="text" name="cropName" placeholder="e.g. Tomato" value="${escapeHTML(item.cropName)}" /></label>
-    <label><span>Available Quantity</span><input type="text" name="quantity" placeholder="e.g. 200 kg" value="${escapeHTML(item.quantity)}" /></label>
-    <label><span>Quality</span><select name="quality"><option value="">Select</option>${["Excellent", "Good", "Average", "Fresh Harvest"].map((option) => `<option ${item.quality === option ? "selected" : ""}>${option}</option>`).join("")}</select></label>
-    <label><span>Price / Unit</span><input type="text" name="price" placeholder="e.g. 40 / kg" value="${escapeHTML(item.price)}" /></label>
-    <label><span>Availability</span><input type="text" name="availability" placeholder="e.g. Daily / Seasonal" value="${escapeHTML(item.availability)}" /></label>
-    <button type="button" class="remove-btn" aria-label="Remove item">×</button>
-  </div>`;
+
+  return `
+    <div class="produce-row">
+
+      <div class="row-number"></div>
+
+      <label>
+        <span>Vegetable / Crop</span>
+
+        <input
+          type="text"
+          name="cropName"
+          placeholder="e.g. Tomato"
+          value="${escapeHTML(item.cropName || "")}"
+        />
+      </label>
+
+
+      <label>
+        <span>Available Quantity</span>
+
+        <input
+          type="text"
+          name="quantity"
+          placeholder="e.g. 200 kg"
+          value="${escapeHTML(item.quantity || "")}"
+        />
+      </label>
+
+
+      <label>
+        <span>Quality</span>
+
+        <select name="quality">
+
+          <option value="">
+            Select
+          </option>
+
+          <option
+            value="Excellent"
+            ${item.quality === "Excellent" ? "selected" : ""}
+          >
+            Excellent
+          </option>
+
+          <option
+            value="Good"
+            ${item.quality === "Good" ? "selected" : ""}
+          >
+            Good
+          </option>
+
+          <option
+            value="Average"
+            ${item.quality === "Average" ? "selected" : ""}
+          >
+            Average
+          </option>
+
+          <option
+            value="Fresh Harvest"
+            ${item.quality === "Fresh Harvest" ? "selected" : ""}
+          >
+            Fresh Harvest
+          </option>
+
+        </select>
+      </label>
+
+
+      <label>
+        <span>Price / Unit</span>
+
+        <input
+          type="text"
+          name="price"
+          placeholder="e.g. 40 / kg"
+          value="${escapeHTML(item.price || "")}"
+        />
+      </label>
+
+
+      <label>
+        <span>Availability</span>
+
+        <input
+          type="text"
+          name="availability"
+          placeholder="e.g. Daily / Seasonal"
+          value="${escapeHTML(item.availability || "")}"
+        />
+      </label>
+
+
+      <button
+        type="button"
+        class="remove-btn"
+        aria-label="Remove item"
+      >
+        ×
+      </button>
+
+    </div>
+  `;
 }
+
+
+// ============================================================
+// NUMBER PRODUCE ROWS
+// ============================================================
 
 function renumberRows() {
-  itemsContainer.querySelectorAll(".produce-row").forEach((row, index) => {
-    row.querySelector(".row-number").textContent = String(index + 1).padStart(
-      2,
-      "0",
+
+  if (!itemsContainer) {
+    return;
+  }
+
+
+  itemsContainer
+    .querySelectorAll(".produce-row")
+    .forEach(
+      (row, index) => {
+
+        const rowNumber =
+          row.querySelector(".row-number");
+
+
+        if (rowNumber) {
+
+          rowNumber.textContent =
+            String(index + 1)
+              .padStart(2, "0");
+        }
+      }
     );
-  });
 }
 
+
+// ============================================================
+// GET PRODUCE ITEMS
+// ============================================================
+
 function getItems() {
-  return [...itemsContainer.querySelectorAll(".produce-row")].map((row) =>
-    Object.fromEntries(
-      [...row.querySelectorAll("input, select")].map((field) => [
-        field.name,
-        field.value.trim(),
-      ]),
-    ),
+
+  if (!itemsContainer) {
+    return [];
+  }
+
+
+  return [
+    ...itemsContainer.querySelectorAll(".produce-row")
+  ].map(
+    (row) =>
+      Object.fromEntries(
+        [
+          ...row.querySelectorAll(
+            "input, select"
+          )
+        ].map(
+          (field) => [
+            field.name,
+            field.value.trim()
+          ]
+        )
+      )
   );
 }
 
+
+// ============================================================
+// GET COMPLETE FORM DATA
+// ============================================================
+
 function getData() {
+
   return {
-    farmName: valueOf("farmName"),
-    location: valueOf("location"),
-    landSize: valueOf("landSize"),
-    farmType: valueOf("farmType"),
-    farmConditions: valueOf("farmConditions"),
-    notes: valueOf("notes"),
-    items: getItems(),
+
+    farmName:
+      valueOf("farmName"),
+
+    location:
+      valueOf("location"),
+
+    landSize:
+      valueOf("landSize"),
+
+    farmType:
+      valueOf("farmType"),
+
+    farmConditions:
+      valueOf("farmConditions"),
+
+    notes:
+      valueOf("notes"),
+
+    items:
+      getItems()
   };
 }
 
+
+// ============================================================
+// UPDATE PROFILE COMPLETION
+// ============================================================
+
 function updateProgress() {
-  const fields = [...form.querySelectorAll("input, select, textarea")];
-  const completed = fields.filter((field) => field.value.trim()).length;
-  const percent = Math.round((completed / fields.length) * 100);
-  progressBar.style.width = `${percent}%`;
-  progressText.textContent = `${percent}%`;
+
+  if (
+    !form ||
+    !progressBar ||
+    !progressText
+  ) {
+    return;
+  }
+
+
+  const fields =
+    [
+      ...form.querySelectorAll(
+        "input, select, textarea"
+      )
+    ];
+
+
+  if (!fields.length) {
+    return;
+  }
+
+
+  const completed =
+    fields.filter(
+      (field) =>
+        field.value.trim()
+    ).length;
+
+
+  const percent =
+    Math.round(
+      (completed / fields.length) *
+      100
+    );
+
+
+  progressBar.style.width =
+    `${percent}%`;
+
+
+  progressText.textContent =
+    `${percent}%`;
 }
 
-function renderSummary(data = getData()) {
-  const cropItems = data.items.filter(
-    (item) =>
-      item.cropName ||
-      item.quantity ||
-      item.quality ||
-      item.price ||
-      item.availability,
-  );
-  const heading = data.farmName || "Unnamed farm";
+
+// ============================================================
+// RENDER FARM SUMMARY
+// ============================================================
+
+function renderSummary(
+  data = getData()
+) {
+
+  if (!summaryBox) {
+    return;
+  }
+
+
+  const cropItems =
+    (data.items || []).filter(
+      (item) =>
+        item.cropName ||
+        item.quantity ||
+        item.quality ||
+        item.price ||
+        item.availability
+    );
+
+
+  const heading =
+    data.farmName ||
+    "Unnamed farm";
+
+
   const location =
-    [data.location, data.farmType].filter(Boolean).join(" · ") ||
+    [
+      data.location,
+      data.farmType
+    ]
+      .filter(Boolean)
+      .join(" · ") ||
     "Add a location or farm type";
-  const farmDetails = [
-    data.landSize ? `<span><b>Land</b>${escapeHTML(data.landSize)}</span>` : "",
-  ]
-    .filter(Boolean)
-    .join("");
-  const crops = cropItems.length
-    ? cropItems
-        .map(
-          (item) =>
-            `<div class="crop-line"><strong class="crop-name">${escapeHTML(item.cropName || "Unnamed crop")}</strong><div class="crop-details"><span><b>Quantity</b>${escapeHTML(item.quantity || "—")}</span><span><b>Quality</b>${escapeHTML(item.quality || "—")}</span><span><b>Price</b>${escapeHTML(item.price || "—")}</span><span><b>Available</b>${escapeHTML(item.availability || "—")}</span></div></div>`,
-        )
-        .join("")
-    : '<p class="summary-location">Add your first crop to see it listed here.</p>';
-  summaryBox.innerHTML = `<div class="summary-content"><h3 class="summary-name">${escapeHTML(heading)}</h3><p class="summary-location">⌖ ${escapeHTML(location)}</p>${farmDetails ? `<div class="summary-meta">${farmDetails}</div>` : ""}<h4>Available produce · ${cropItems.length}</h4>${crops}${data.notes ? `<h4>Notes</h4><p class="summary-location">${escapeHTML(data.notes)}</p>` : ""}</div>`;
+
+
+  const farmDetails =
+    data.landSize
+      ? `
+          <span>
+            <b>Land</b>
+            ${escapeHTML(data.landSize)}
+          </span>
+        `
+      : "";
+
+
+  const crops =
+    cropItems.length
+
+      ? cropItems
+          .map(
+            (item) =>
+              `
+                <div class="crop-line">
+
+                  <strong class="crop-name">
+                    ${escapeHTML(
+                      item.cropName ||
+                      "Unnamed crop"
+                    )}
+                  </strong>
+
+                  <div class="crop-details">
+
+                    <span>
+                      <b>Quantity</b>
+                      ${escapeHTML(
+                        item.quantity || "—"
+                      )}
+                    </span>
+
+                    <span>
+                      <b>Quality</b>
+                      ${escapeHTML(
+                        item.quality || "—"
+                      )}
+                    </span>
+
+                    <span>
+                      <b>Price</b>
+                      ${escapeHTML(
+                        item.price || "—"
+                      )}
+                    </span>
+
+                    <span>
+                      <b>Available</b>
+                      ${escapeHTML(
+                        item.availability || "—"
+                      )}
+                    </span>
+
+                  </div>
+
+                </div>
+              `
+          )
+          .join("")
+
+      : `
+          <p class="summary-location">
+            Add your first crop to see it listed here.
+          </p>
+        `;
+
+
+  summaryBox.innerHTML = `
+
+    <div class="summary-content">
+
+      <h3 class="summary-name">
+        ${escapeHTML(heading)}
+      </h3>
+
+      <p class="summary-location">
+        ⌖ ${escapeHTML(location)}
+      </p>
+
+      ${
+        farmDetails
+          ? `
+              <div class="summary-meta">
+                ${farmDetails}
+              </div>
+            `
+          : ""
+      }
+
+      <h4>
+        Available produce · ${cropItems.length}
+      </h4>
+
+      ${crops}
+
+      ${
+        data.notes
+          ? `
+              <h4>Notes</h4>
+
+              <p class="summary-location">
+                ${escapeHTML(data.notes)}
+              </p>
+            `
+          : ""
+      }
+
+    </div>
+  `;
 }
+
+
+// ============================================================
+// SAVE LOCAL DRAFT
+// ============================================================
 
 function saveDraft(showStatus = false) {
-  const data = getData();
-  localStorage.setItem(storageKey, JSON.stringify(data));
+
+  const data =
+    getData();
+
+
+  /*
+   * LocalStorage is only used as a temporary browser draft.
+   *
+   * SQLite remains the real source of saved farm details.
+   */
+
+  localStorage.setItem(
+    storageKey,
+    JSON.stringify(data)
+  );
+
+
   updateProgress();
+
   renderSummary(data);
-  saveStatus.innerHTML =
-    '<span class="save-icon">✓</span><span>Draft saved just now</span>';
-  if (showStatus) {
+
+
+  if (saveStatus && saveStatus !== false) {
+
+    saveStatus.innerHTML =
+      `
+        <span class="save-icon">✓</span>
+        <span>Draft saved just now</span>
+      `;
+  }
+
+
+  if (showStatus && toast) {
+
     toast.classList.add("show");
-    window.clearTimeout(window.toastTimer);
-    window.toastTimer = window.setTimeout(
-      () => toast.classList.remove("show"),
-      3000,
+
+
+    window.clearTimeout(
+      window.toastTimer
     );
+
+
+    window.toastTimer =
+      window.setTimeout(
+        () =>
+          toast.classList.remove(
+            "show"
+          ),
+        3000
+      );
   }
 }
 
-function loadDraft() {
-  const localDraft = JSON.parse(localStorage.getItem(storageKey) || "null");
-  const saved = localDraft || initialFarmDetails;
-  if (!saved) return;
 
-  [
+// ============================================================
+// LOAD SAVED FARM DETAILS
+// ============================================================
+
+function loadDraft() {
+
+  /*
+   * VERY IMPORTANT:
+   *
+   * DATABASE DATA ALWAYS HAS PRIORITY.
+   *
+   * If Flask gives us initialFarmDetails,
+   * use that information.
+   *
+   * We DO NOT allow old localStorage data
+   * to replace the database information.
+   */
+
+  let saved = null;
+
+
+  // ----------------------------------------------------------
+  // CASE 1:
+  // EXISTING FARM DETAILS FOUND IN DATABASE
+  // ----------------------------------------------------------
+
+  if (initialFarmDetails) {
+
+    saved =
+      initialFarmDetails;
+
+
+    /*
+     * Remove old browser draft.
+     *
+     * This prevents an old farm name/location/etc.
+     * from coming back later.
+     */
+
+    localStorage.removeItem(
+      storageKey
+    );
+
+  }
+
+  // ----------------------------------------------------------
+  // CASE 2:
+  // NO DATABASE DATA
+  // ----------------------------------------------------------
+
+  else {
+
+    const localDraftRaw =
+      localStorage.getItem(
+        storageKey
+      );
+
+
+    if (localDraftRaw) {
+
+      try {
+
+        saved =
+          JSON.parse(
+            localDraftRaw
+          );
+
+      } catch (error) {
+
+        console.warn(
+          "Invalid local draft found. Clearing it."
+        );
+
+
+        localStorage.removeItem(
+          storageKey
+        );
+      }
+    }
+  }
+
+
+  // ----------------------------------------------------------
+  // NOTHING TO LOAD
+  // ----------------------------------------------------------
+
+  if (!saved) {
+
+    if (itemsContainer) {
+
+      if (
+        !itemsContainer.querySelector(
+          ".produce-row"
+        )
+      ) {
+
+        itemsContainer.innerHTML =
+          itemTemplate();
+      }
+    }
+
+
+    renumberRows();
+
+    updateProgress();
+
+    renderSummary();
+
+    return;
+  }
+
+
+  // ==========================================================
+  // LOAD FARM INFORMATION
+  // ==========================================================
+
+  const farmFields = [
     "farmName",
     "location",
     "landSize",
     "farmType",
     "farmConditions",
-    "notes",
-  ].forEach((name) => {
-    const field = form.elements[name];
-    if (field && saved[name]) field.value = saved[name];
-  });
+    "notes"
+  ];
 
-  if (saved.items?.length) {
-    itemsContainer.innerHTML = saved.items.map(itemTemplate).join("");
+
+  farmFields.forEach(
+    (name) => {
+
+      if (!form) {
+        return;
+      }
+
+
+      const field =
+        form.elements[name];
+
+
+      if (
+        field &&
+        saved[name] !== undefined &&
+        saved[name] !== null
+      ) {
+
+        field.value =
+          saved[name];
+      }
+    }
+  );
+
+
+  // ==========================================================
+  // LOAD SAVED PRODUCE ITEMS
+  // ==========================================================
+
+  /*
+   * The backend should normally provide `items`.
+   *
+   * This fallback also supports older data that may use
+   * `crops`.
+   */
+
+  let savedItems =
+    Array.isArray(saved.items)
+      ? saved.items
+      : [];
+
+
+  if (
+    !savedItems.length &&
+    Array.isArray(saved.crops)
+  ) {
+
+    savedItems =
+      saved.crops;
   }
 
+
+  if (
+    itemsContainer &&
+    savedItems.length > 0
+  ) {
+
+    itemsContainer.innerHTML =
+      savedItems
+        .map(itemTemplate)
+        .join("");
+
+  } else if (itemsContainer) {
+
+    /*
+     * Keep one empty produce row.
+     */
+
+    itemsContainer.innerHTML =
+      itemTemplate();
+  }
+
+
+  // ==========================================================
+  // UPDATE PAGE
+  // ==========================================================
+
   renumberRows();
-  renderSummary(saved);
+
+  renderSummary(
+    getData()
+  );
+
   updateProgress();
 
-  saveStatus.innerHTML = localDraft
-    ? '<span class="save-icon">✓</span><span>Draft restored</span>'
-    : '<span class="save-icon">✓</span><span>Saved details loaded</span>';
 
-  lastUpdated.textContent = localDraft
-    ? "Restored from draft"
-    : (saved.updated_at || "Saved on server");
+  // ==========================================================
+  // SAVE STATUS
+  // ==========================================================
+
+  if (initialFarmDetails) {
+
+    if (saveStatus) {
+
+      saveStatus.innerHTML =
+        `
+          <span class="save-icon">✓</span>
+          <span>Saved details loaded</span>
+        `;
+    }
+
+
+    if (lastUpdated) {
+
+      lastUpdated.textContent =
+        initialFarmDetails.updated_at ||
+        "Saved on server";
+    }
+
+  } else {
+
+    if (saveStatus) {
+
+      saveStatus.innerHTML =
+        `
+          <span class="save-icon">✓</span>
+          <span>Draft restored</span>
+        `;
+    }
+
+
+    if (lastUpdated) {
+
+      lastUpdated.textContent =
+        "Restored from draft";
+    }
+  }
 }
 
-document.querySelectorAll(".mic-btn").forEach((button) => {
-  button.addEventListener("click", () =>
-    startVoiceInput(button.dataset.target),
-  );
-});
 
-addItemBtn.addEventListener("click", () => {
-  itemsContainer.insertAdjacentHTML("beforeend", itemTemplate());
-  renumberRows();
-  itemsContainer.lastElementChild.querySelector("input").focus();
-  saveDraft();
-});
+// ============================================================
+// SCROLL TO ADD HARVEST / PRODUCE SECTION
+// ============================================================
 
-itemsContainer.addEventListener("click", (event) => {
-  const removeButton = event.target.closest(".remove-btn");
-  if (!removeButton) return;
-  const rows = itemsContainer.querySelectorAll(".produce-row");
-  if (rows.length === 1) {
-    rows[0].querySelectorAll("input, select").forEach((field) => {
-      field.value = "";
-    });
-  } else {
-    removeButton.closest(".produce-row").remove();
+function scrollToProduceSection() {
+
+  /*
+   * Dashboard button should point to:
+   *
+   * /farmer-details#produce-section
+   *
+   * This means the farmer does NOT have to scroll
+   * through the whole Farmer Details page.
+   */
+
+  if (
+    window.location.hash !==
+    "#produce-section"
+  ) {
+    return;
   }
-  renumberRows();
-  saveDraft();
-});
 
-form.addEventListener("input", () => {
-  updateProgress();
-  renderSummary();
-  saveDraft();
-});
-form.addEventListener("change", () => {
-  updateProgress();
-  renderSummary();
-  saveDraft();
-});
-form.addEventListener("submit", (event) => {
-  event.preventDefault();
-  saveDraft(true);
-  lastUpdated.textContent = new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date());
-  document
-    .querySelector(".preview-card")
-    .scrollIntoView({ behavior: "smooth", block: "nearest" });
 
-  // Save to backend
-  saveToBackend();
-});
+  const produceSection =
+    document.getElementById(
+      "produce-section"
+    );
+
+
+  if (!produceSection) {
+    return;
+  }
+
+
+  /*
+   * Wait until the existing farm details have been loaded.
+   */
+
+  setTimeout(
+    () => {
+
+      const headerOffset = 90;
+
+
+      const sectionPosition =
+        produceSection.getBoundingClientRect().top +
+        window.scrollY -
+        headerOffset;
+
+
+      window.scrollTo({
+        top: sectionPosition,
+        behavior: "smooth"
+      });
+
+
+      /*
+       * Put the cursor in the first crop field.
+       *
+       * This makes Add Harvest feel like a direct
+       * "add a crop" action.
+       */
+
+      setTimeout(
+        () => {
+
+          const firstCropInput =
+            produceSection.querySelector(
+              'input[name="cropName"]'
+            );
+
+
+          if (firstCropInput) {
+            firstCropInput.focus();
+          }
+
+        },
+        600
+      );
+
+    },
+    300
+  );
+}
+
+
+// ============================================================
+// MICROPHONE BUTTONS
+// ============================================================
+
+document
+  .querySelectorAll(".mic-btn")
+  .forEach(
+    (button) => {
+
+      button.addEventListener(
+        "click",
+        () =>
+          startVoiceInput(
+            button.dataset.target
+          )
+      );
+    }
+  );
+
+
+// ============================================================
+// ADD PRODUCE ITEM
+// ============================================================
+
+if (addItemBtn) {
+
+  addItemBtn.addEventListener(
+    "click",
+    () => {
+
+      if (!itemsContainer) {
+        return;
+      }
+
+
+      itemsContainer.insertAdjacentHTML(
+        "beforeend",
+        itemTemplate()
+      );
+
+
+      renumberRows();
+
+
+      const lastRow =
+        itemsContainer.lastElementChild;
+
+
+      const firstInput =
+        lastRow?.querySelector(
+          'input[name="cropName"]'
+        );
+
+
+      if (firstInput) {
+        firstInput.focus();
+      }
+
+
+      saveDraft();
+    }
+  );
+}
+
+
+// ============================================================
+// REMOVE PRODUCE ITEM
+// ============================================================
+
+if (itemsContainer) {
+
+  itemsContainer.addEventListener(
+    "click",
+    (event) => {
+
+      const removeButton =
+        event.target.closest(
+          ".remove-btn"
+        );
+
+
+      if (!removeButton) {
+        return;
+      }
+
+
+      const rows =
+        itemsContainer.querySelectorAll(
+          ".produce-row"
+        );
+
+
+      if (rows.length === 1) {
+
+        rows[0]
+          .querySelectorAll(
+            "input, select"
+          )
+          .forEach(
+            (field) => {
+              field.value = "";
+            }
+          );
+
+      } else {
+
+        removeButton
+          .closest(".produce-row")
+          .remove();
+      }
+
+
+      renumberRows();
+
+      saveDraft();
+    }
+  );
+}
+
+
+// ============================================================
+// FORM INPUT
+// ============================================================
+
+if (form) {
+
+  form.addEventListener(
+    "input",
+    () => {
+
+      updateProgress();
+
+      renderSummary();
+
+      saveDraft();
+    }
+  );
+
+
+  form.addEventListener(
+    "change",
+    () => {
+
+      updateProgress();
+
+      renderSummary();
+
+      saveDraft();
+    }
+  );
+}
+
+
+// ============================================================
+// FORM SUBMIT
+// ============================================================
+
+if (form) {
+
+  form.addEventListener(
+    "submit",
+    (event) => {
+
+      event.preventDefault();
+
+
+      saveDraft(true);
+
+
+      if (lastUpdated) {
+
+        lastUpdated.textContent =
+          new Intl.DateTimeFormat(
+            undefined,
+            {
+              dateStyle: "medium",
+              timeStyle: "short"
+            }
+          ).format(
+            new Date()
+          );
+      }
+
+
+      const previewCard =
+        document.querySelector(
+          ".preview-card"
+        );
+
+
+      if (previewCard) {
+
+        previewCard.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest"
+        });
+      }
+
+
+      saveToBackend();
+    }
+  );
+}
+
+
+// ============================================================
+// SAVE TO FLASK BACKEND
+// ============================================================
 
 async function saveToBackend() {
-  try {
-    const data = getData();
-    const response = await fetch("/api/farm-details", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
 
-    const result = await response.json();
-    if (result.success) {
-      console.log("Farm details saved to backend successfully");
-    } else {
-      console.error("Error saving to backend:", result.message);
+  try {
+
+    const data =
+      getData();
+
+
+    const response =
+      await fetch(
+        "/api/farm-details",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify(data)
+        }
+      );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        `Server returned ${response.status}`
+      );
     }
+
+
+    const result =
+      await response.json();
+
+
+    if (result.success) {
+
+      console.log(
+        "Farm details saved to backend successfully."
+      );
+
+
+      /*
+       * Database is now the source of truth.
+       *
+       * Remove the temporary browser draft.
+       */
+
+      localStorage.removeItem(
+        storageKey
+      );
+
+
+      if (saveStatus) {
+
+        saveStatus.innerHTML =
+          `
+            <span class="save-icon">✓</span>
+            <span>Saved successfully</span>
+          `;
+      }
+
+    } else {
+
+      console.error(
+        "Error saving to backend:",
+        result.message
+      );
+    }
+
   } catch (error) {
-    console.error("Error saving to backend:", error);
+
+    console.error(
+      "Error saving to backend:",
+      error
+    );
+
+
+    if (saveStatus) {
+
+      saveStatus.innerHTML =
+        `
+          <span class="save-icon">!</span>
+          <span>Could not save to server</span>
+        `;
+    }
   }
 }
 
-form.addEventListener("reset", () => {
-  window.setTimeout(() => {
-    itemsContainer.innerHTML = itemTemplate();
-    renumberRows();
-    localStorage.removeItem(storageKey);
-    saveStatus.innerHTML =
-      '<span class="save-icon">✓</span><span>Drafts save automatically</span>';
-    lastUpdated.textContent = "Not saved yet";
-    updateProgress();
-    renderSummary();
-  }, 0);
-});
 
-themeToggle.addEventListener("click", () => {
-  document.body.classList.toggle("dark");
-  const dark = document.body.classList.contains("dark");
-  themeToggle.innerHTML = `<span>${dark ? "☾" : "☼"}</span>`;
-  themeToggle.setAttribute(
-    "aria-label",
-    dark ? "Switch to light mode" : "Switch to dark mode",
+// ============================================================
+// FORM RESET
+// ============================================================
+
+if (form) {
+
+  form.addEventListener(
+    "reset",
+    () => {
+
+      window.setTimeout(
+        () => {
+
+          /*
+           * IMPORTANT:
+           *
+           * Reset only resets the browser form.
+           * It does NOT delete farm details from SQLite.
+           */
+
+          if (itemsContainer) {
+
+            itemsContainer.innerHTML =
+              itemTemplate();
+          }
+
+
+          renumberRows();
+
+
+          localStorage.removeItem(
+            storageKey
+          );
+
+
+          if (saveStatus) {
+
+            saveStatus.innerHTML =
+              `
+                <span class="save-icon">✓</span>
+                <span>Drafts save automatically</span>
+              `;
+          }
+
+
+          if (lastUpdated) {
+
+            lastUpdated.textContent =
+              "Not saved yet";
+          }
+
+
+          updateProgress();
+
+          renderSummary();
+
+        },
+        0
+      );
+    }
   );
-  localStorage.setItem("farm-theme", dark ? "dark" : "light");
-});
-
-if (localStorage.getItem("farm-theme") === "dark") {
-  document.body.classList.add("dark");
-  themeToggle.innerHTML = "<span>☾</span>";
-  themeToggle.setAttribute("aria-label", "Switch to light mode");
 }
-document.querySelector("#year").textContent = new Date().getFullYear();
+
+
+// ============================================================
+// DARK MODE
+// ============================================================
+
+if (themeToggle) {
+
+  themeToggle.addEventListener(
+    "click",
+    () => {
+
+      document.body.classList.toggle(
+        "dark"
+      );
+
+
+      const dark =
+        document.body.classList.contains(
+          "dark"
+        );
+
+
+      themeToggle.innerHTML =
+        `<span>${dark ? "☾" : "☼"}</span>`;
+
+
+      themeToggle.setAttribute(
+        "aria-label",
+        dark
+          ? "Switch to light mode"
+          : "Switch to dark mode"
+      );
+
+
+      localStorage.setItem(
+        "farm-theme",
+        dark
+          ? "dark"
+          : "light"
+      );
+    }
+  );
+
+
+  if (
+    localStorage.getItem(
+      "farm-theme"
+    ) === "dark"
+  ) {
+
+    document.body.classList.add(
+      "dark"
+    );
+
+
+    themeToggle.innerHTML =
+      "<span>☾</span>";
+
+
+    themeToggle.setAttribute(
+      "aria-label",
+      "Switch to light mode"
+    );
+  }
+}
+
+
+// ============================================================
+// FOOTER YEAR
+// ============================================================
+
+const yearElement =
+  document.querySelector("#year");
+
+
+if (yearElement) {
+
+  yearElement.textContent =
+    new Date().getFullYear();
+}
+
+
+// ============================================================
+// INITIALIZE PAGE
+// ============================================================
+
 renumberRows();
+
 loadDraft();
+
 displayFarmerInfo();
+
+
+// ============================================================
+// HANDLE ADD HARVEST HASH
+// ============================================================
+
+/*
+ * Run this AFTER loadDraft().
+ *
+ * This is important because we want the database farm
+ * information to appear first and THEN scroll to the
+ * produce section.
+ */
+
+scrollToProduceSection();
