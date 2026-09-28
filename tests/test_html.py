@@ -8,7 +8,7 @@ def test_location_field():
     html = html_path.read_text(encoding="utf-8")
     soup = BeautifulSoup(html, "html.parser")
 
-    location = soup.find("input", {"name": "s1s2s3"})
+    location = soup.find("input", {"name": "location"})
 
     assert location is not None, "Location input field is missing"
 
