@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 
 
 def test_location_field():
-    html_path = Path("templates/index.html")
+    html_path = Path("static/index.html")
 
     html = html_path.read_text(encoding="utf-8")
     soup = BeautifulSoup(html, "html.parser")
